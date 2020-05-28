@@ -33,10 +33,10 @@ openssl req -x509 -nodes -newkey rsa:2048 -keyout key.pem -out cert.pem -days 36
 ```
 *You will be asked questions when generating the self-signed certificate, answer the prompts until the process completes*
 
-### 2. Configure db_config.json
+### 2. Configure db.json
 Create a new database configuration file using the following path / template, found below:
 
-**needle/config/db_config.json**
+**needle/config/db.json**
 
 ```
 {
@@ -51,13 +51,13 @@ Create a new database configuration file using the following path / template, fo
 }
 ```
 
-### 3. Configure auth_config.json
+### 3. Configure auth.json
 This API utilizes JSON web tokens for authentication. This requires that a secret password be provided via config file.
 Since private data is not supposed to be stored in a repo, you will have to create your own file.
 
 Create a new auth configuration file using the following path / template, found below:
 
-**needle/config/auth_config.json**
+**needle/config/auth.json**
 
 ```
 {
