@@ -4,7 +4,7 @@
   "description": "API used by Compass for agile project backlog",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_NO_WARNINGS=0 nodemon --exec babel-node index.js"
   },
   "repository": {
     "type": "git",
