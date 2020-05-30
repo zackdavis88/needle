@@ -1,4 +1,5 @@
 import User from "../models/user";
+import Membership from "../models/membership";
 import jwt from "jsonwebtoken";
 import { secret } from "../../config/auth";
 
@@ -77,8 +78,96 @@ const authorizeUserChange = (req, res, next) => {
   next();
 };
 
+const authorizeAdmin = (req, res, next) => {
+  const { user, project } = req;
+
+  Membership.findOne({user: user._id, project: project._id}, (err, membership) => {
+    if(err)
+      return res.fatalError(err);
+    
+    if(!membership)
+      return res.authorizationError("you must be a project member to perform this action");
+
+    if(!membership.roles.isAdmin)
+      return res.authorizationError("you must have admin permissions to perform this action");
+    
+    next();
+  });
+};
+
+const authorizeManager = (req, res, next) => {
+  const { user, project } = req;
+
+  Membership.findOne({user: user._id, project: project._id}, (err, membership) => {
+    if(err)
+      return res.fatalError(err);
+
+    if(!membership)
+      return res.authorizationError("you must be a project member to perform this action");
+    
+    const adminRequired = (
+      (req.body.roles && typeof req.body.roles.isAdmin === "boolean") ||
+      (req.body.confirm && req.membership && req.membership.roles.isAdmin)
+    );
+
+    if(adminRequired && !membership.roles.isAdmin)
+      return res.authorizationError("you must have admin permissions to perform this action");
+
+    if(!membership.roles.isAdmin && !membership.roles.isManager)
+      return res.authorizationError("you must have manager permissions to perform this action");
+    
+    next();
+  });
+};
+
+const authorizeDeveloper = (req, res, next) => {
+  const { user, project } = req;
+
+  Membership.findOne({user: user._id, project: project._id}, (err, membership) => {
+    if(err)
+      return res.fatalError(err);
+
+    if(!membership)
+      return res.authorizationError("you must be a project member to perform this action");
+    
+    const { isAdmin, isManager, isDeveloper } = membership.roles;
+    if(!isAdmin && !isManager && !isDeveloper)
+      return res.authorizationError("you must have developer permissions to perform this action");
+    
+    next();
+  });
+};
+
+const authorizeViewer = (req, res, next) => {
+  const { user, project } = req;
+  
+  // If the project is not private, authorize the user.
+  if(!project.isPrivate)
+    return next();
+  
+  // If we get this far then the Project isPrivate.
+  // Find the requesting users membership for the project and ensure that it is
+  Membership.findOne({user: user._id, project: project._id}, (err, membership) => {
+    if(err)
+      return res.fatalError(err);
+
+    if(!membership)
+      return res.authorizationError("you must be a project member to perform this action");
+
+    const { isAdmin, isManager, isDeveloper, isViewer } = membership.roles;
+    if(!isAdmin && !isManager && !isDeveloper && !isViewer)
+      return res.authorizationError("you must have viewer permissions to perform this action");
+    
+    next();
+  });
+};
+
 export default {
   generateToken,
   authenticateToken,
-  authorizeUserChange
+  authorizeUserChange,
+  authorizeAdmin,
+  authorizeManager,
+  authorizeDeveloper,
+  authorizeViewer
 };
