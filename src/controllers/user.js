@@ -50,13 +50,11 @@ const getAll = (req, res) => {
         page,
         totalPages,
         itemsPerPage,
-        users: users.map((user) => {
-          return {
-            username: user.username,
-            displayName: user.displayName,
-            createdOn: user.createdOn
-          };
-        })
+        users: users.map((user) => ({
+          username: user.username,
+          displayName: user.displayName,
+          createdOn: user.createdOn
+        }))
       };
 
       return res.success("user list has been successfully retrieved", userList);

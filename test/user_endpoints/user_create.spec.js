@@ -9,9 +9,9 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[User] Create", function(){
+describe("[User] Create", () => {
   const randomUsername = mongoose.Types.ObjectId().toString().toUpperCase();
-  let postData;
+  let payload;
   let existingUser;
   before((done) => {
     createTestUser("Password1", (user) => {
@@ -21,7 +21,7 @@ describe("[User] Create", function(){
   });
 
   beforeEach((done) => {
-    postData = {username: randomUsername, password: "Password1"};
+    payload = {username: randomUsername, password: "Password1"};
     done();
   });
 
@@ -31,120 +31,120 @@ describe("[User] Create", function(){
 
   describe("POST /users", () => {
     it("should reject requests when username is missing from input", (done) => {
-      postData.username = undefined;
+      payload.username = undefined;
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username is missing from input"
         }, done);
     });
 
     it("should reject requests when username is not a string", (done) => {
-      postData.username = {something: "non-string"};
+      payload.username = {something: "non-string"};
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username must be a string"
         }, done);
     });
 
     it("should reject requests when username is under 3 characters in length", (done) => {
-      postData.username = "ab";
+      payload.username = "ab";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username must be 3 - 26 characters in length"
         }, done);
     });
 
     it("should reject requests when username is over 26 characters in length", (done) => {
-      postData.username = "abcdefghijklmnopqrstuvwxyza";
+      payload.username = "abcdefghijklmnopqrstuvwxyza";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username must be 3 - 26 characters in length"
         }, done);
     });
 
     it("should reject requests when username contains invalid characters", (done) => {
-      postData.username = "te$tCase";
+      payload.username = "te$tCase";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username may only contain alphanumeric, - (dash), and _ (underscore) characters"
         }, done);
     });
 
     it("should reject requests when username is already taken", (done) => {
-      postData.username = existingUser.displayName;
+      payload.username = existingUser.displayName;
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "username is already taken"
         }, done);
     });
 
     it("should reject requests when password is missing from input", (done) => {
-      postData.password = undefined;
+      payload.password = undefined;
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password is missing from input"
         }, done);
     });
 
     it("should reject requests when password is not a string", (done) => {
-      postData.password = 234273482734892748927;
+      payload.password = 234273482734892748927;
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must be a string"
         }, done);
     });
 
     it("should reject requests when password is under 8 characters in length", (done) => {
-      postData.password = "weak";
+      payload.password = "weak";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must be at least 8 characters in length"
         }, done);
     });
   
     it("should reject requests when password does not contain an uppercase character", (done) => {
-      postData.password = "password1";
+      payload.password = "password1";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
     });
 
     it("should reject requests when password does not contain an lowercase character", (done) => {
-      postData.password = "PASSWORD1";
+      payload.password = "PASSWORD1";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
     });
   
     it("should reject requests when password does not contain an numeric character", (done) => {
-      postData.password = "PasswordOne";
+      payload.password = "PasswordOne";
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
@@ -153,7 +153,7 @@ describe("[User] Create", function(){
     it("should successfully create a user", (done) => {
       server
         .post("/users")
-        .send(postData)
+        .send(payload)
         .expect(200)
         .end((err, res) => {
           if(err)
@@ -168,8 +168,8 @@ describe("[User] Create", function(){
             displayName,
             createdOn
           } = user;
-          assert.equal(username, postData.username.toLowerCase());
-          assert.equal(displayName, postData.username);
+          assert.equal(username, payload.username.toLowerCase());
+          assert.equal(displayName, payload.username);
           assert(createdOn);
           done();
         });

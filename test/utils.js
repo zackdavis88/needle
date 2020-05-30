@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 import User from "../src/models/user";
+import Project from "../src/models/project";
+import Membership from "../src/models/membership";
 import { secret } from "../config/auth";
 import mongoose from "mongoose";
 let cleanupUsernames = [];
+let cleanupProjectIds = [];
 
 export const createTestUser = (password, callback) => {
   User.generateHash(password, (err, hash) => {
@@ -29,6 +32,52 @@ export const createTestUser = (password, callback) => {
   });
 };
 
+export const createTestProject = (isPrivate, user, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testProject = {
+    name: randomName,
+    description: "Created via unit test automation",
+    isPrivate: isPrivate || false,
+    isActive: true,
+    createdOn: new Date()
+  };
+  Project.create(testProject, (err, project) => {
+    if(err)
+      return console.error(err);
+
+    const testMembership = {
+      project: project._id,
+      user: user._id,
+      roles: {
+        isAdmin: true
+      },
+      createdOn: new Date()
+    };
+    Membership.create(testMembership, (err) => {
+      if(err)
+        return console.error(err);
+      
+      addProjectIdForCleanup(project._id.toString());
+      callback(project);
+    });
+  });
+};
+
+export const createTestMembership = (project, user, roles, callback) => {
+  const testMembership = {
+    project: project._id,
+    user: user._id,
+    roles,
+    createdOn: new Date()
+  };
+  Membership.create(testMembership, (err, membership) => {
+    if(err)
+      return console.error(err);
+
+    callback(membership);
+  });
+};
+
 export const getTestUser = (username, callback) => {
   User.findOne({username: username.toLowerCase()}, (err, user) => {
     if(err)
@@ -38,8 +87,19 @@ export const getTestUser = (username, callback) => {
   });
 };
 
+export const getTestMembership = (projectId, userId, callback) => {
+  Membership.findOne({project: projectId, user: userId}, (err, membership) => {
+    if(err)
+      return console.error(err);
+    
+    callback(membership);
+  });
+};
+
 export const cleanupTestRecords = (callback) => {
-  cleanupTestUsers(callback);
+  cleanupTestUsers(() => {
+    cleanupTestProjects(callback);
+  });
 };
 
 const cleanupTestUsers = (callback) => {
@@ -59,8 +119,35 @@ const cleanupTestUsers = (callback) => {
   });
 };
 
+const cleanupTestProjects = (callback) => {
+  if(!cleanupProjectIds.length)
+    return callback();
+  
+  cleanupProjectIds.forEach((_id, index, array) => {
+    Membership.deleteMany({project: _id}, (err) => {
+      if(err)
+        return console.error(err);
+
+      Project.deleteOne({_id}, (err) => {
+        if(err)
+          return console.error(err);
+        
+        if(index === array.length - 1){
+          cleanupProjectIds = [];
+          return callback();
+        }
+      });
+    });
+  });
+};
+
 export const addUsernameForCleanup = (username) => {
   cleanupUsernames.push(username.toLowerCase());
+  return;
+};
+
+export const addProjectIdForCleanup = (projectId) => {
+  cleanupProjectIds.push(projectId);
   return;
 };
 
