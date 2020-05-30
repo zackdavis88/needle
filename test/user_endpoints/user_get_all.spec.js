@@ -8,7 +8,7 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[User] Get All", function(){
+describe("[User] Get All", () => {
   let testUser;
   let authToken;
   before((done) => {

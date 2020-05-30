@@ -8,11 +8,11 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[User] Remove", function(){
+describe("[User] Remove", () => {
   let testUser1;
   let testUser2;
   let authToken;
-  let postData;
+  let payload;
   before((done) => {
     createTestUser("Password1", (user1) => {
       createTestUser("Password1", (user2) => {
@@ -25,7 +25,7 @@ describe("[User] Remove", function(){
   });
 
   beforeEach((done) => {
-    postData = {confirm: testUser1.username};
+    payload = {confirm: testUser1.username};
     done();
   });
 
@@ -52,22 +52,22 @@ describe("[User] Remove", function(){
     });
 
     it("should reject requests when confirm is missing from input", (done) => {
-      postData.confirm = undefined;
+      payload.confirm = undefined;
       server
         .delete(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "confirm is missing from input"
         }, done);
     });
 
     it("should reject requests when confirm is not a string", (done) => {
-      postData.confirm = true;
+      payload.confirm = true;
       server
         .delete(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "confirm must be a string"
         }, done);
@@ -87,7 +87,7 @@ describe("[User] Remove", function(){
       server
         .delete(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(200)
         .end((err, res) => {
           if(err)

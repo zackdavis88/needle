@@ -7,7 +7,7 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[Auth] Authenticate Token", function(){
+describe("[Auth] Authenticate Token", () => {
   let testUser;
   let authToken;
   before((done) => {

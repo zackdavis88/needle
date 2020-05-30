@@ -142,7 +142,7 @@ const update = (req, res, next) => {
 const remove = (req, res, next) => {
   const confirm = req.body.confirm;
   const project = req.project;
-  validateConfirmString(project, "name", confirm, "string", (err) => {
+  validateConfirmString(project, "name", confirm, (err) => {
     if(err)
       return res.validationError(err);
     

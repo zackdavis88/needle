@@ -10,10 +10,10 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[Project] Create", function(){
+describe("[Project] Create", () => {
   let testUser;
   let authToken;
-  let postData;
+  let payload;
   before((done) => {
     createTestUser("Password1", (user) => {
       testUser = user;
@@ -23,7 +23,7 @@ describe("[Project] Create", function(){
   });
 
   beforeEach((done) => {
-    postData = {
+    payload = {
       name: "UNIT TEST Project",
       description: "Created via unit test automation",
       isPrivate: true
@@ -45,88 +45,88 @@ describe("[Project] Create", function(){
     });
 
     it("should reject requests that are missing name input", (done) => {
-      postData.name = undefined;
+      payload.name = undefined;
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "name is missing from input"
         }, done);
     });
 
     it("should reject requests when name is not a string", (done) => {
-      postData.name = {something: "invalid"};
+      payload.name = {something: "invalid"};
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "name must be a string"
         }, done);
     });
 
     it("should reject requests when name is under 3 characters", (done) => {
-      postData.name = "z";
+      payload.name = "z";
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "name must be 3 - 50 characters in length"
         }, done);
     });
 
     it("should reject requests when name is over 50 characters", (done) => {
-      postData.name = "abcdefghijklmnopqrstuvwxyz-_+=&^%$#@!/|{}()0123456789";
+      payload.name = "abcdefghijklmnopqrstuvwxyz-_+=&^%$#@!/|{}()0123456789";
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "name must be 3 - 50 characters in length"
         }, done);
     });
 
     it("should reject requests when name contains invalid characters", (done) => {
-      postData.name = "abc-_+=&^%$#@!/|{}()?.,<>;':\"*]";
+      payload.name = "abc-_+=&^%$#@!/|{}()?.,<>;':\"*]";
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "name contains invalid characters"
         }, done);
     });
 
     it("should reject requests when description is not a string", (done) => {
-      postData.description = false;
+      payload.description = false;
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "description must be a string"
         }, done);
     });
 
     it("should reject requests when description is over 350 characters", (done) => {
-      postData.description = new Array(351).fill("a").join("");
+      payload.description = new Array(351).fill("a").join("");
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "description must be 350 characters or less"
         }, done);
     });
 
     it("should reject requests when isPrivate input is not a boolean", (done) => {
-      postData.isPrivate = "private please";
+      payload.isPrivate = "private please";
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "isPrivate must be a boolean"
         }, done);
@@ -136,7 +136,7 @@ describe("[Project] Create", function(){
       server
         .post("/projects")
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(200)
         .end((err, res) => {
           if(err)
@@ -151,9 +151,9 @@ describe("[Project] Create", function(){
           } = res.body.project;
           assert.equal(res.body.message, "project has been successfully created");
           assert(id);
-          assert.equal(name, postData.name);
-          assert.equal(description, postData.description);
-          assert.equal(isPrivate, postData.isPrivate);
+          assert.equal(name, payload.name);
+          assert.equal(description, payload.description);
+          assert.equal(isPrivate, payload.isPrivate);
           assert(createdOn);
           addProjectIdForCleanup(id);
           getTestMembership(id, testUser._id, (membership) => {

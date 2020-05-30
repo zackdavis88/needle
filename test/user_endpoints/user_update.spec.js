@@ -10,11 +10,11 @@ import {
 import User from "../../src/models/user";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[User] Update", function(){
+describe("[User] Update", () => {
   let testUser1;
   let testUser2;
   let authToken;
-  let postData;
+  let payload;
   before((done) => {
     createTestUser("Password1", (user1) => {
       createTestUser("Password1", (user2) => {
@@ -27,7 +27,7 @@ describe("[User] Update", function(){
   });
 
   beforeEach((done) => {
-    postData = {password: "NewPassword1", currentPassword: "Password1"};
+    payload = {password: "NewPassword1", currentPassword: "Password1"};
     done();
   });
 
@@ -54,99 +54,99 @@ describe("[User] Update", function(){
     });
 
     it("should reject requests when currentPassword is missing from input", (done) => {
-      postData.currentPassword = undefined;
+      payload.currentPassword = undefined;
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "current password is missing from input"
         }, done);
     });
 
     it("should reject requests when currentPassword is not a string", (done) => {
-      postData.currentPassword = 234273482734892748927;
+      payload.currentPassword = 234273482734892748927;
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "current password must be a string"
         }, done);
     });
 
     it("should reject requests when currentPassword is invalid", (done) => {
-      postData.currentPassword = "SomePasswordThatIsWrong"
+      payload.currentPassword = "SomePasswordThatIsWrong"
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "current password is invalid"
         }, done);
     });
 
     it("should reject requests when password is missing from input", (done) => {
-      postData.password = undefined;
+      payload.password = undefined;
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password is missing from input"
         }, done);
     });
 
     it("should reject requests when password is not a string", (done) => {
-      postData.password = {something: "non-string"};
+      payload.password = {something: "non-string"};
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must be a string"
         }, done);
     });
 
     it("should reject requests when password is under 8 characters in length", (done) => {
-      postData.password = "weak";
+      payload.password = "weak";
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must be at least 8 characters in length"
         }, done);
     });
   
     it("should reject requests when password does not contain an uppercase character", (done) => {
-      postData.password = "password1";
+      payload.password = "password1";
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
     });
 
     it("should reject requests when password does not contain an lowercase character", (done) => {
-      postData.password = "PASSWORD1";
+      payload.password = "PASSWORD1";
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
     });
   
     it("should reject requests when password does not contain an numeric character", (done) => {
-      postData.password = "PasswordOne";
+      payload.password = "PasswordOne";
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(400, {
           error: "password must have 1 uppercase, lowercase, and number character"
         }, done);
@@ -156,7 +156,7 @@ describe("[User] Update", function(){
       server
         .post(`/users/${testUser1.username}`)
         .set("x-needle-token", authToken)
-        .send(postData)
+        .send(payload)
         .expect(200)
         .end((err, res) => {
           if(err)
@@ -178,7 +178,7 @@ describe("[User] Update", function(){
           
           // Validate that the password actually changed.
           getTestUser(testUser1.username, (user) => {
-            User.compareHash(postData.password, user.hash, (err, passwordIsValid) => {
+            User.compareHash(payload.password, user.hash, (err, passwordIsValid) => {
               assert.equal(passwordIsValid, true);
               done();
             });

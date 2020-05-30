@@ -10,7 +10,7 @@ import {
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
-describe("[Project] Get One", function(){
+describe("[Project] Get One", () => {
   let testUserAdmin;
   let testUserNonMember;
   let testUserNoPermissions;
@@ -74,7 +74,7 @@ describe("[Project] Get One", function(){
         }, done);
     });
 
-    it("should reject requests from non-member when the project is private", (done) => {
+    it("should reject requests from non-members when the project is private", (done) => {
       server
         .get(`/projects/${testProjectPrivate._id}`)
         .set("x-needle-token", authTokenNonMember)
