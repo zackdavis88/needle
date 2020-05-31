@@ -7,7 +7,7 @@ const projectRoutes = (router) => {
   router.route("/projects")
     .all(
       authValidator.jwtHeader,
-      authController.authenticateToken,
+      authController.authenticateToken
     )
 
     .post(
