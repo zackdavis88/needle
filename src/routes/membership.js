@@ -35,6 +35,12 @@ const projectRoutes = (router) => {
     .get(
       authController.authorizeViewer,
       membershipController.getOne
+    )
+    
+    .post(
+      authController.authorizeManager,
+      membershipValidator.update,
+      membershipController.update
     );
 };
 

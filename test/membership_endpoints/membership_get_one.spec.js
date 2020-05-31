@@ -60,7 +60,7 @@ describe("[Membership] Get One", () => {
 
     it("should reject requests when the projectId slug is invalid", (done) => {
       server
-        .get(`/projects/[Invalid]/memberships/someMembershiup`)
+        .get(`/projects/[Invalid]/memberships/someMembershipId`)
         .set("x-needle-token", authTokenAdmin)
         .expect(400, {
           error: "project id is not valid"
@@ -69,7 +69,7 @@ describe("[Membership] Get One", () => {
 
     it("should reject requests when the requested project is not found", (done) => {
       server
-        .get(`/projects/impossibleId/memberships`)
+        .get(`/projects/impossibleId/memberships/someMembershipId`)
         .set("x-needle-token", authTokenAdmin)
         .expect(404, {
           error: "requested project not found"

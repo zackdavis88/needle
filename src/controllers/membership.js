@@ -82,8 +82,34 @@ const getOne = (req, res) => {
   return res.success("membership has been successfully retrieved", {membership: membershipData});
 };
 
+const update = (req, res) => {
+  const { membership, project } = req;
+  const { roles } = req.body;
+  membership.roles = {...membership.roles, ...roles};
+  membership.updatedOn = new Date();
+  membership.save((err, updatedMembership) => {
+    if(err)
+      return res.fatalError(err);
+    
+    const membershipData = {
+      id: updatedMembership._id,
+      project: {
+        id: project._id,
+        name: project.name
+      },
+      user: membership.user,
+      roles: updatedMembership.roles,
+      createdOn: updatedMembership.createdOn,
+      updatedOn: updatedMembership.updatedOn
+    };
+
+    return res.success("membership has been successfully updated", {membership: membershipData});
+  });
+};
+
 export default {
   create,
   getAll,
-  getOne
+  getOne,
+  update
 };
