@@ -53,12 +53,12 @@ export const createTestProject = (isPrivate, user, callback) => {
       },
       createdOn: new Date()
     };
-    Membership.create(testMembership, (err) => {
+    Membership.create(testMembership, (err, membership) => {
       if(err)
         return console.error(err);
       
       addProjectIdForCleanup(project._id.toString());
-      callback(project);
+      callback(project, membership);
     });
   });
 };

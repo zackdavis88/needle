@@ -41,6 +41,12 @@ const projectRoutes = (router) => {
       authController.authorizeManager,
       membershipValidator.update,
       membershipController.update
+    )
+    
+    .delete(
+      authController.authorizeManager,
+      membershipValidator.remove,
+      membershipController.remove
     );
 };
 

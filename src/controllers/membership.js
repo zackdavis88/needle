@@ -107,9 +107,20 @@ const update = (req, res) => {
   });
 };
 
+const remove = (req, res) => {
+  const { membership } = req;
+  membership.remove(err => {
+    if(err)
+      return res.fatalError(err);
+    
+    return res.success("membership has been successfully deleted");
+  });
+};
+
 export default {
   create,
   getAll,
   getOne,
-  update
+  update,
+  remove
 };
