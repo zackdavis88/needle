@@ -20,7 +20,7 @@ const userRoutes = (router) => {
   router.route("/users/:username")
     .all(
       authValidator.jwtHeader,
-      authController.authenticateToken,
+      authController.authenticateToken
     )
 
     .get(
