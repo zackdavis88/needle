@@ -57,6 +57,7 @@ describe("[Membership] Create", () => {
   after(done => {
     cleanupTestRecords(done);
   });
+  
   describe("POST /projects/:projectId/memberships", () => {
     it("should reject requests when x-needle-token is invalid", (done) => {
       server

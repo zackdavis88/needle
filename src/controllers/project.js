@@ -81,7 +81,7 @@ const getOne = (req, res) => {
     createdOn: project.createdOn,
     updatedOn: project.updatedOn
   };
-  res.success("project has been successfully retrieved", {project: projectData});
+  return res.success("project has been successfully retrieved", {project: projectData});
 };
 
 const update = (req, res) => {

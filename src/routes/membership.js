@@ -16,6 +16,25 @@ const projectRoutes = (router) => {
       authController.authorizeManager,
       membershipValidator.create,
       membershipController.create
+    )
+    
+    .get(
+      authController.authorizeViewer,
+      membershipValidator.getAll,
+      membershipController.getAll
+    );
+
+  router.route("/projects/:projectId/memberships/:membershipId")
+    .all(
+      authValidator.jwtHeader,
+      authController.authenticateToken,
+      projectValidator.projectIdSlug,
+      membershipValidator.membershipIdSlug
+    )
+
+    .get(
+      authController.authorizeViewer,
+      membershipController.getOne
     );
 };
 
