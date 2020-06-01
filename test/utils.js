@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../src/models/user";
 import Project from "../src/models/project";
 import Membership from "../src/models/membership";
+import Story from "../src/models/story";
 import { secret } from "../config/auth";
 import mongoose from "mongoose";
 let cleanupUsernames = [];
@@ -78,6 +79,24 @@ export const createTestMembership = (project, user, roles, callback) => {
   });
 };
 
+export const createTestStory = (project, creator, owner=null, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testStory = {
+    name: randomName,
+    details: "Created via unit test automation",
+    creator: creator._id,
+    project: project._id,
+    owner: owner ? owner._id : null,
+    createdOn: new Date()
+  };
+  Story.create(testStory, (err, story) => {
+    if(err)
+      return console.error(err);
+    
+    callback(story);
+  }); 
+};
+
 export const getTestUser = (username, callback) => {
   User.findOne({username: username.toLowerCase()}, (err, user) => {
     if(err)
@@ -128,14 +147,19 @@ const cleanupTestProjects = (callback) => {
       if(err)
         return console.error(err);
 
-      Project.deleteOne({_id}, (err) => {
+      Story.deleteMany({project: _id}, (err) => {
         if(err)
           return console.error(err);
-        
-        if(index === array.length - 1){
-          cleanupProjectIds = [];
-          return callback();
-        }
+
+        Project.deleteOne({_id}, (err) => {
+          if(err)
+            return console.error(err);
+          
+          if(index === array.length - 1){
+            cleanupProjectIds = [];
+            return callback();
+          }
+        });
       });
     });
   });
