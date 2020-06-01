@@ -7,7 +7,7 @@ import {
   isMissing, 
   validatePaginationInput, 
   getOneWithSlug,
-  validateConfirmString
+  validateConfirmBoolean
 } from "../utils/validator";
 
 const _validateName = (name, isOptional, callback) => {
@@ -43,12 +43,15 @@ const _validateDetails = (details, callback) => {
   callback();
 };
 
-const _validateOwner = (owner, callback) => {
+const _validateOwner = (owner, project, callback) => {
   if(isMissing(owner))
     return callback();
   
   if(!compareType(owner, "string"))
     return callback("owner must be a string");
+
+  if(owner.length === 0)
+    return callback();
   
   const queryArgs = {username: owner.toLowerCase(), isActive: true};
   User.findOne(queryArgs, (err, user) => {
@@ -58,7 +61,15 @@ const _validateOwner = (owner, callback) => {
     if(!user)
       return callback("requested owner does not exist");
     
-    callback(null, user);
+    Membership.findOne({project: project._id, user: user._id}, (err, membership) => {
+      if(err)
+        return callback(err);
+      
+      if(!membership)
+        return callback("requested owner is not a member of this project");
+
+      callback(null, user);
+    });
   });
 };
 
@@ -73,22 +84,14 @@ const create = (req, res, next) => {
       if(err)
         return res.validationError(err);
       
-      _validateOwner(owner, (err, user) => {
+      _validateOwner(owner, project, (err, user) => {
         if(err && err.code)
           return res.fatalError(err);
         else if(err)
           return res.validationError(err);
         
-        Membership.findOne({project: project._id, user: user._id}, (err, membership) => {
-          if(err)
-            return res.fatalError(err);
-          
-          if(!membership)
-            return res.validationError("requested owner is not a member of this project");
-
-          req.owner = user;
-          next();
-        });
+        req.owner = user;
+        next();
       });
     });
   });
@@ -142,8 +145,36 @@ const storyIdSlug = (req, res, next) => {
   );
 };
 
+const update = (req, res, next) => {
+  const { name, details, owner } = req.body;
+  const { project } = req;
+  if(isMissing(name) && isMissing(details) && isMissing(owner))
+    return res.validationError("request contains no update input");
+  
+  _validateName(name, true, (err) => {
+    if(err)
+      return res.validationError(err);
+    
+    _validateDetails(details, (err) => {
+      if(err)
+        return res.validationError(err);
+
+      _validateOwner(owner, project, (err, user) => {
+        if(err && err.code)
+          return res.fatalError(err);
+        else if(err)
+          return res.validationError(err);
+
+        req.owner = user;
+        next();
+      });
+    });
+  });
+};
+
 export default {
   create,
   getAll,
-  storyIdSlug
+  storyIdSlug,
+  update
 };

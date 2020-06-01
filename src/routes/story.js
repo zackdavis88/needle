@@ -35,6 +35,12 @@ const projectRoutes = (router) => {
     .get(
       authController.authorizeViewer,
       storyController.getOne
+    )
+    
+    .post(
+      authController.authorizeDeveloper,
+      storyValidator.update,
+      storyController.update
     );
 };
 

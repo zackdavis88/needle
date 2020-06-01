@@ -96,8 +96,55 @@ const getOne = (req, res) => {
   return res.success("story has been successfully retrieved", {story: storyData});
 };
 
+const update = (req, res) => {
+  const { name, details } = req.body;
+  const ownerInput = req.body.owner;
+  const { project, story, owner } = req;
+  if(name)
+    story.name = name;
+  
+  if(details)
+    story.details = details;
+  else if(typeof details === "string" && !details.length)
+    story.details = null;
+  
+  if(owner)
+    story.owner = owner._id;
+  else if(typeof ownerInput === "string" && !ownerInput.length)
+    story.owner = null;
+  
+  story.updatedOn = new Date();
+  story.save((err, updatedStory) => {
+    if(err)
+      return res.fatalError(err);
+
+    const storyData = {
+      id: updatedStory._id,
+      name: updatedStory.name,
+      details: updatedStory.details,
+      project: {
+        id: project._id,
+        name: project.name
+      },
+      creator: story.creator,
+      owner: story.owner, // default the owner to whatever we originally pulled from the db.
+      createdOn: updatedStory.createdOn,
+      updatedOn: updatedStory.updatedOn
+    };
+
+    // If the owner field was updated or removed, ensure the storyData variable reflects that.
+    if(owner)
+      storyData.owner = {username: owner.username, displayName: owner.displayName};
+    else if(typeof ownerInput === "string" && !ownerInput.length)
+      storyData.owner = null;
+
+    return res.success("story has been successfully updated", {story: storyData});
+  });
+};
+
 export default {
   create,
   getAll,
-  getOne
+  getOne,
+  update
 };
