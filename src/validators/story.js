@@ -172,9 +172,20 @@ const update = (req, res, next) => {
   });
 };
 
+const remove = (req, res, next) => {
+  const { confirm } = req.body;
+  validateConfirmBoolean(confirm, (err) => {
+    if(err)
+      return res.validationError(err);
+    
+    next();
+  });
+};
+
 export default {
   create,
   getAll,
   storyIdSlug,
-  update
+  update,
+  remove
 };

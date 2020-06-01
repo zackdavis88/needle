@@ -41,6 +41,12 @@ const projectRoutes = (router) => {
       authController.authorizeDeveloper,
       storyValidator.update,
       storyController.update
+    )
+    
+    .delete(
+      authController.authorizeDeveloper,
+      storyValidator.remove,
+      storyController.remove
     );
 };
 

@@ -142,9 +142,20 @@ const update = (req, res) => {
   });
 };
 
+const remove = (req, res) => {
+  const { story } = req;
+  story.remove(err => {
+    if(err)
+      return res.fatalError(err);
+    
+    return res.success("story has been successfully deleted");
+  });
+};
+
 export default {
   create,
   getAll,
   getOne,
-  update
+  update,
+  remove
 };
