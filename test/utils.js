@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../src/models/user";
 import Project from "../src/models/project";
 import Membership from "../src/models/membership";
+import Story from "../src/models/story";
 import { secret } from "../config/auth";
 import mongoose from "mongoose";
 let cleanupUsernames = [];
@@ -128,14 +129,19 @@ const cleanupTestProjects = (callback) => {
       if(err)
         return console.error(err);
 
-      Project.deleteOne({_id}, (err) => {
+      Story.deleteMany({project: _id}, (err) => {
         if(err)
           return console.error(err);
-        
-        if(index === array.length - 1){
-          cleanupProjectIds = [];
-          return callback();
-        }
+
+        Project.deleteOne({_id}, (err) => {
+          if(err)
+            return console.error(err);
+          
+          if(index === array.length - 1){
+            cleanupProjectIds = [];
+            return callback();
+          }
+        });
       });
     });
   });
