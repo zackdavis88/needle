@@ -79,6 +79,24 @@ export const createTestMembership = (project, user, roles, callback) => {
   });
 };
 
+export const createTestStory = (project, creator, owner=null, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testStory = {
+    name: randomName,
+    details: "Created via unit test automation",
+    creator: creator._id,
+    project: project._id,
+    owner: owner ? owner._id : null,
+    createdOn: new Date()
+  };
+  Story.create(testStory, (err, story) => {
+    if(err)
+      return console.error(err);
+    
+    callback(story);
+  }); 
+};
+
 export const getTestUser = (username, callback) => {
   User.findOne({username: username.toLowerCase()}, (err, user) => {
     if(err)

@@ -1,5 +1,6 @@
 import User from "../models/user";
 import Membership from "../models/membership";
+import Story from "../models/story";
 import mongoose from "mongoose";
 import { 
   compareType, 
@@ -93,6 +94,56 @@ const create = (req, res, next) => {
   });
 };
 
+const getAll = (req, res, next) => {
+  const { project, query } = req;
+  const countQueryArgs = { project: project._id };
+  validatePaginationInput(
+    Story,
+    countQueryArgs,
+    query, 
+    (err, paginationData) => {
+      if(err)
+        return res.fatalError(err);
+      
+      req.paginationData = paginationData;
+      next();
+    }
+  );
+};
+
+const storyIdSlug = (req, res, next) => {
+  const storyId = req.params.storyId.toLowerCase();
+  const { project } = req;
+  if(!mongoose.Types.ObjectId.isValid(storyId))
+    return res.validationError("story id is not valid");
+  
+  const getQueryArgs = { project: project._id, _id: storyId };
+  const notFoundMsg = "requested story not found";
+  const queryOptions = {
+    populate: {
+      creator: "-_id username displayName",
+      owner: "-_id username displayName"
+    }
+  };
+  getOneWithSlug(
+    Story,
+    getQueryArgs,
+    notFoundMsg,
+    queryOptions,
+    (err, story) => {
+      if(err && err.code)
+        return res.fatalError(err);
+      else if(err)
+        return res.notFoundError(err);
+      
+      req.story = story;
+      next();
+    }
+  );
+};
+
 export default {
-  create
+  create,
+  getAll,
+  storyIdSlug
 };

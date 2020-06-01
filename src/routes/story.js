@@ -16,6 +16,25 @@ const projectRoutes = (router) => {
       authController.authorizeDeveloper,
       storyValidator.create,
       storyController.create
+    )
+    
+    .get(
+      authController.authorizeViewer,
+      storyValidator.getAll,
+      storyController.getAll
+    );
+
+  router.route("/projects/:projectId/stories/:storyId")
+    .all(
+      authValidator.jwtHeader,
+      authController.authenticateToken,
+      projectValidator.projectIdSlug,
+      storyValidator.storyIdSlug
+    )
+
+    .get(
+      authController.authorizeViewer,
+      storyController.getOne
     );
 };
 
