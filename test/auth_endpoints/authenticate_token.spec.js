@@ -5,6 +5,7 @@ import {
   createTestUser,
   generateToken
 } from "../utils";
+import assert from "assert";
 const server = supertest.agent(`https://localhost:${port}`);
 
 describe("[Auth] Authenticate Token", () => {
@@ -106,9 +107,19 @@ describe("[Auth] Authenticate Token", () => {
       server
         .get("/auth/token")
         .set("x-needle-token", jwtToken)
-        .expect(200, {
-          message: "user successfully authenticated via token"
-        }, done);
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+          
+          const {message, user} = res.body;
+          assert.equal(message, "user successfully authenticated via token");
+          assert(user);
+          assert(user.username, testUser.username);
+          assert(user.displayName, testUser.displayName);
+          assert(user.createdOn);
+          done();
+        });
     });
   });
 });

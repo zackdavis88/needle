@@ -7,7 +7,16 @@ const authRoutes = (router) => {
   
   router.route("/auth/token")
     .get(validator.jwtHeader, controller.authenticateToken, (req, res) => {
-      res.success("user successfully authenticated via token");
+      const {user} = req;
+      const userData = {
+        user: {
+          username: user.username,
+          displayName: user.displayName,
+          createdOn: user.createdOn,
+          updatedOn: user.updatedOn
+        }
+      }
+      res.success("user successfully authenticated via token", userData);
     });
 };
 
