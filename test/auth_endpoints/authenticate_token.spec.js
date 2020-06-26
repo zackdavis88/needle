@@ -118,6 +118,7 @@ describe("[Auth] Authenticate Token", () => {
           assert(user.username, testUser.username);
           assert(user.displayName, testUser.displayName);
           assert(user.createdOn);
+          assert(res.headers["x-needle-token"]);
           done();
         });
     });

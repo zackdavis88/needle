@@ -162,6 +162,26 @@ const authorizeViewer = (req, res, next) => {
   });
 };
 
+const validateToken = (req, res) => {
+  const {user} = req;
+  const tokenData = {
+    _id: user._id,
+    apiKey: user.apiKey
+  };
+  const jwtOptions = { expiresIn: "10h" };
+  const token = jwt.sign(tokenData, secret, jwtOptions);
+  const userData = {
+    user: {
+      username: user.username,
+      displayName: user.displayName,
+      createdOn: user.createdOn,
+      updatedOn: user.updatedOn
+    }
+  };
+  res.set("x-needle-token", token);
+  res.success("user successfully authenticated via token", userData);
+};
+
 export default {
   generateToken,
   authenticateToken,
@@ -169,5 +189,6 @@ export default {
   authorizeAdmin,
   authorizeManager,
   authorizeDeveloper,
-  authorizeViewer
+  authorizeViewer,
+  validateToken
 };
