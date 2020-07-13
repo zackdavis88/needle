@@ -21,13 +21,14 @@ const get = (req, res) => {
             return res.fatalError(err);
 
           const result = {
-            projects: memberships.map(({project}) => ({
+            projects: memberships.map(({project, roles}) => ({
               id: project._id,
               name: project.name,
               isPrivate: project.isPrivate,
               isActive: project.isActive,
               createdOn: project.createdOn,
-              updatedOn: project.updatedOn
+              updatedOn: project.updatedOn,
+              roles
             })),
             stories: stories.map(story => ({
               id: story._id,
