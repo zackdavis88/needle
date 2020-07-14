@@ -6,7 +6,7 @@ const get = (req, res) => {
   Membership
     .find({user: user._id})
     .sort({createdOn: "asc"})
-    .populate("project", "-description")
+    .populate("project")
     .exec((err, memberships) => {
       if(err)
         return res.fatalError(err);
@@ -24,6 +24,7 @@ const get = (req, res) => {
             projects: memberships.map(({project, roles}) => ({
               id: project._id,
               name: project.name,
+              description: project.description,
               isPrivate: project.isPrivate,
               isActive: project.isActive,
               createdOn: project.createdOn,

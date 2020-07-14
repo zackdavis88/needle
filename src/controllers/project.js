@@ -6,7 +6,7 @@ const create = (req, res) => {
   const user = req.user;
   Project.create({
     name,
-    description: description && description.length ? description : null,
+    description: description && description.length ? description : "",
     isPrivate: !!isPrivate,
     isActive: true,
     createdOn: new Date(),
@@ -93,7 +93,7 @@ const update = (req, res) => {
   if(description)
     project.description = description;
   else if(typeof description === "string" && !description.length)
-    project.description = null;
+    project.description = "";
   
   if(typeof isPrivate === "boolean")
     project.isPrivate = isPrivate;
