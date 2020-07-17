@@ -21,16 +21,21 @@ const get = (req, res) => {
             return res.fatalError(err);
 
           const result = {
-            projects: memberships.map(({project, roles}) => ({
-              id: project._id,
-              name: project.name,
-              description: project.description,
-              isPrivate: project.isPrivate,
-              isActive: project.isActive,
-              createdOn: project.createdOn,
-              updatedOn: project.updatedOn,
-              roles
-            })),
+            projects: memberships.reduce((prev, {project, roles}) => {
+              if(!project.isActive)
+                return prev;
+              
+              return prev.concat({
+                id: project._id,
+                name: project.name,
+                description: project.description,
+                isPrivate: project.isPrivate,
+                isActive: project.isActive,
+                createdOn: project.createdOn,
+                updatedOn: project.updatedOn,
+                roles
+              });
+            }, []),
             stories: stories.map(story => ({
               id: story._id,
               name: story.name,
