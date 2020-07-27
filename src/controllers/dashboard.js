@@ -12,10 +12,15 @@ const get = (req, res) => {
         return res.fatalError(err);
 
       Story
-        .find({owner: user._id})
+        .find()
+        .or([
+          {owner: user._id},
+          {creator: user._id}
+        ])
         .sort({createdOn: "asc"})
         .populate("project", "-description")
         .populate("creator", "-_id username displayName")
+        .populate("owner", "-_id username displayName")
         .exec((err, stories) => {
           if(err)
             return res.fatalError(err);
@@ -40,6 +45,7 @@ const get = (req, res) => {
               id: story._id,
               name: story.name,
               creator: story.creator,
+              owner: story.owner,
               project: {
                 id: story.project._id,
                 name: story.project.name
