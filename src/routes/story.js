@@ -4,7 +4,7 @@ import projectValidator from "../validators/project";
 import storyValidator from "../validators/story";
 import storyController from "../controllers/story";
 
-const projectRoutes = (router) => {
+const storyRoutes = (router) => {
   router.route("/projects/:projectId/stories")
     .all(
       authValidator.jwtHeader,
@@ -50,4 +50,4 @@ const projectRoutes = (router) => {
     );
 };
 
-export default projectRoutes;
+export default storyRoutes;

@@ -3,8 +3,9 @@ import authValidator from "../validators/auth";
 import projectValidator from "../validators/project";
 import membershipValidator from "../validators/membership";
 import membershipController from "../controllers/membership";
+import membership from "../models/membership";
 
-const projectRoutes = (router) => {
+const membershipRoutes = (router) => {
   router.route("/projects/:projectId/memberships")
     .all(
       authValidator.jwtHeader,
@@ -23,6 +24,16 @@ const projectRoutes = (router) => {
       membershipValidator.getAll,
       membershipController.getAll
     );
+
+  router.route("/projects/:projectId/memberships/available")
+    .all(
+      authValidator.jwtHeader,
+      authController.authenticateToken,
+      projectValidator.projectIdSlug,
+      authController.authorizeManager
+    )
+
+    .get(membershipController.availableUsers);
 
   router.route("/projects/:projectId/memberships/:membershipId")
     .all(
@@ -50,4 +61,4 @@ const projectRoutes = (router) => {
     );
 };
 
-export default projectRoutes;
+export default membershipRoutes;

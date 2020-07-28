@@ -1,4 +1,5 @@
 import Membership from "../models/membership";
+import User from "../models/user";
 
 const create = (req, res) => {
   const { member, project } = req;
@@ -117,10 +118,37 @@ const remove = (req, res) => {
   });
 };
 
+//TODO: Write unit tests for this endpoint.
+/* Since you cannot Create a membership for a user that already has a membership, it would be very useful
+   if the UI could receive a list of all available users that are NOT members already. */
+const availableUsers = (req, res) => {
+  const {project} = req;
+  Membership
+    .find({project: project._id})
+    .sort({createdOn: "asc"})
+    .distinct("user")
+    .exec((err, memberships) => {
+      if(err)
+        return res.fatalError(err);
+
+      User
+        .find({_id: {$nin: memberships}})
+        .sort({createdOn: "asc"})
+        .distinct("displayName")
+        .exec((err, users) => {
+          if(err)
+            return res.fatalError(err);
+          
+          return res.success("available users have been successfully retrieved", {users})
+        });
+    });
+};
+
 export default {
   create,
   getAll,
   getOne,
   update,
-  remove
+  remove,
+  availableUsers
 };
