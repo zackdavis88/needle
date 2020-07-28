@@ -118,7 +118,6 @@ const remove = (req, res) => {
   });
 };
 
-//TODO: Write unit tests for this endpoint.
 /* Since you cannot Create a membership for a user that already has a membership, it would be very useful
    if the UI could receive a list of all available users that are NOT members already. */
 const availableUsers = (req, res) => {
