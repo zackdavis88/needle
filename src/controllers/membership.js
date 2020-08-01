@@ -39,7 +39,7 @@ const getAll = (req, res) => {
   Membership
     .find({project: project._id})
     .sort({createdOn: "asc"})
-    .populate("user", "-_id username displayName")
+    .populate("user", "-_id username displayName isActive")
     .skip(pageOffset)
     .limit(itemsPerPage)
     .exec((err, memberships) => {
@@ -54,13 +54,28 @@ const getAll = (req, res) => {
           id: project._id,
           name: project.name
         },
-        memberships: memberships.map(membership => ({
-          id: membership._id,
-          user: membership.user,
-          roles: membership.roles,
-          createdOn: membership.createdOn,
-          updatedOn: membership.updatedOn
-        }))
+        // memberships: memberships.map(membership => ({
+        //   id: membership._id,
+        //   user: membership.user,
+        //   roles: membership.roles,
+        //   createdOn: membership.createdOn,
+        //   updatedOn: membership.updatedOn
+        // })),
+        memberships: memberships.reduce((prev, curr) => {
+          if(curr.user.isActive) {
+            return prev.concat({
+              id: curr._id,
+              user: {
+                username: curr.user.username,
+                displayName: curr.user.displayName
+              },
+              roles: curr.roles,
+              createdOn: curr.createdOn,
+              updatedOn: curr.updatedOn
+            })
+          }
+          return prev;
+        }, [])
       };
 
       return res.success("membership list has been successfully retrieved", result);

@@ -85,11 +85,11 @@ const getOne = (req, res) => {
   };
 
   if(includeStatistics){
-    Membership.count({project: project._id}, (err, membershipCount) => {
+    Membership.countDocuments({project: project._id}, (err, membershipCount) => {
       if(err)
         return res.fatalError(err);
       
-      Story.count({project: project._id}, (err, storyCount) => {
+      Story.countDocuments({project: project._id}, (err, storyCount) => {
         if(err)
           return res.fatalError(err);
         
