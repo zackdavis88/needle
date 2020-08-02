@@ -6,6 +6,7 @@ import {
   createTestUser,
   createTestProject,
   createTestMembership,
+  createTestStory,
   generateToken
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
@@ -34,7 +35,9 @@ describe("[Project] Get One", () => {
             createTestProject(false, testUserAdmin, (project) => {
               testProjectPublic = project;
               createTestMembership(testProjectPrivate, testUserNoPermissions, {isViewer: false}, () => {
-                done();
+                createTestStory(testProjectPrivate, testUserAdmin, false, (story) => {
+                  done();
+                });
               });
             });
           });
@@ -107,7 +110,8 @@ describe("[Project] Get One", () => {
             name,
             description,
             isPrivate,
-            createdOn
+            createdOn,
+            statistics
           } = project;
           assert.equal(message, "project has been successfully retrieved");
           assert.equal(id, testProjectPrivate._id);
@@ -115,6 +119,7 @@ describe("[Project] Get One", () => {
           assert.equal(description, testProjectPrivate.description);
           assert.equal(isPrivate, testProjectPrivate.isPrivate);
           assert(createdOn);
+          assert.equal(statistics, undefined);
           done();
         });
     });
@@ -124,6 +129,23 @@ describe("[Project] Get One", () => {
         .get(`/projects/${testProjectPublic._id}`)
         .set("x-needle-token", authTokenNonMember)
         .expect(200, done);
+    });
+
+    it("should include project statistics if includeStatistics query-string is set to 'true'", (done) => {
+      server
+        .get(`/projects/${testProjectPrivate._id}?includeStatistics=true`)
+        .set("x-needle-token", authTokenAdmin)
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+          
+          const {statistics} = res.body.project;
+          assert(statistics);
+          assert.equal(statistics.memberships, 2);
+          assert.equal(statistics.stories, 1);
+          done();
+        });
     });
   });
 });

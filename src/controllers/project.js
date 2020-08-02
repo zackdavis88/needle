@@ -1,5 +1,6 @@
 import Project from "../models/project";
 import Membership from "../models/membership";
+import Story from "../models/story";
 
 const create = (req, res) => {
   const { name, description, isPrivate } = req.body;
@@ -72,6 +73,7 @@ const getAll = (req, res) => {
 };
 
 const getOne = (req, res) => {
+  const includeStatistics = req.query.includeStatistics && req.query.includeStatistics === "true";
   const project = req.project;
   const projectData = {
     id: project._id,
@@ -81,7 +83,27 @@ const getOne = (req, res) => {
     createdOn: project.createdOn,
     updatedOn: project.updatedOn
   };
-  return res.success("project has been successfully retrieved", {project: projectData});
+
+  if(includeStatistics){
+    Membership.countDocuments({project: project._id}, (err, membershipCount) => {
+      if(err)
+        return res.fatalError(err);
+      
+      Story.countDocuments({project: project._id}, (err, storyCount) => {
+        if(err)
+          return res.fatalError(err);
+        
+        projectData.statistics = {
+          memberships: membershipCount,
+          stories: storyCount
+        };
+        
+        return res.success("project has been successfully retrieved", {project: projectData});
+      });
+    });
+  }
+  else
+    return res.success("project has been successfully retrieved", {project: projectData});
 };
 
 const update = (req, res) => {
