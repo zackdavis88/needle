@@ -9,6 +9,7 @@ import {
   createTestStory,
   generateToken
 } from "../utils";
+import { request } from "express";
 const server = supertest.agent(`https://localhost:${port}`);
 
 describe("[Project] Get One", () => {
@@ -104,7 +105,15 @@ describe("[Project] Get One", () => {
           if(err)
             return done(err);
 
-          const { message, project } = res.body;
+          const { message, project, userRoles } = res.body;
+          // Validate that userRoles are being returned, we expect this test to return userRoles at admin level.
+          assert(userRoles);
+          assert(userRoles.isAdmin);
+          assert(!userRoles.isManager);
+          assert(!userRoles.isDeveloper);
+          assert(userRoles.isViewer);
+
+          // Validate expected Project data is returned.
           const {
             id,
             name,
@@ -128,7 +137,15 @@ describe("[Project] Get One", () => {
       server
         .get(`/projects/${testProjectPublic._id}`)
         .set("x-needle-token", authTokenNonMember)
-        .expect(200, done);
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+          
+          const {userRoles} = res.body;
+          assert.equal(userRoles, null);
+          done();
+        });
     });
 
     it("should include project statistics if includeStatistics query-string is set to 'true'", (done) => {
