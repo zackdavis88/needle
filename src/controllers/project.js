@@ -74,14 +74,17 @@ const getAll = (req, res) => {
 
 const getOne = (req, res) => {
   const includeStatistics = req.query.includeStatistics && req.query.includeStatistics === "true";
-  const project = req.project;
-  const projectData = {
-    id: project._id,
-    name: project.name,
-    description: project.description,
-    isPrivate: project.isPrivate,
-    createdOn: project.createdOn,
-    updatedOn: project.updatedOn
+  const {project, requestMembership} = req;
+  const responsePayload = {
+    project: {
+      id: project._id,
+      name: project.name,
+      description: project.description,
+      isPrivate: project.isPrivate,
+      createdOn: project.createdOn,
+      updatedOn: project.updatedOn
+    },
+    userRoles: requestMembership ? requestMembership.roles : null
   };
 
   if(includeStatistics){
@@ -93,17 +96,17 @@ const getOne = (req, res) => {
         if(err)
           return res.fatalError(err);
         
-        projectData.statistics = {
+        responsePayload.project.statistics = {
           memberships: membershipCount,
           stories: storyCount
         };
         
-        return res.success("project has been successfully retrieved", {project: projectData});
+        return res.success("project has been successfully retrieved", responsePayload);
       });
     });
   }
   else
-    return res.success("project has been successfully retrieved", {project: projectData});
+    return res.success("project has been successfully retrieved", responsePayload);
 };
 
 const update = (req, res) => {

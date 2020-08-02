@@ -91,6 +91,7 @@ const authorizeAdmin = (req, res, next) => {
     if(!membership.roles.isAdmin)
       return res.authorizationError("you must have admin permissions to perform this action");
     
+    req.requestMembership = membership;
     next();
   });
 };
@@ -116,6 +117,7 @@ const authorizeManager = (req, res, next) => {
     if(!membership.roles.isAdmin && !membership.roles.isManager)
       return res.authorizationError("you must have manager permissions to perform this action");
     
+    req.requestMembership = membership;
     next();
   });
 };
@@ -134,6 +136,7 @@ const authorizeDeveloper = (req, res, next) => {
     if(!isAdmin && !isManager && !isDeveloper)
       return res.authorizationError("you must have developer permissions to perform this action");
     
+    req.requestMembership = membership;
     next();
   });
 };
@@ -158,6 +161,7 @@ const authorizeViewer = (req, res, next) => {
     if(!isAdmin && !isManager && !isDeveloper && !isViewer)
       return res.authorizationError("you must have viewer permissions to perform this action");
     
+    req.requestMembership = membership;
     next();
   });
 };
