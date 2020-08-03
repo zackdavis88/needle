@@ -27,8 +27,10 @@ export const validatePaginationInput = (model, countQueryArgs, queryStringInput,
 
     const totalPages = Math.ceil(count / itemsPerPage);
     let page = Number(queryStringInput.page);
-    if(isNaN(page) || !Number.isInteger(Number(page)) || page <= 0 || page > totalPages)
+    if(isNaN(page) || !Number.isInteger(Number(page)) || page <= 0)
       page = 1;
+    else if(page > totalPages) // If the page is greater than the limit. set it to the limit.
+      page = totalPages;
     
     const pageOffset = (page - 1) * itemsPerPage;
     const paginationData = {
