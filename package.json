@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_NO_WARNINGS=0 nodemon --exec babel-node index.js",
     "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_NO_WARNINGS=1 ./node_modules/.bin/babel-node ./scripts/run_tests.js",
-    "init_local": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_NO_WARNINGS=1 ./node_modules/.bin/babel-node ./scripts/init_local.js"
+    "localdb": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_NO_WARNINGS=1 ./node_modules/.bin/babel-node ./scripts/init_local.js"
   },
   "repository": {
     "type": "git",
