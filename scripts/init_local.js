@@ -98,7 +98,7 @@ const _generateUsers = (genAmount, callback, currentList=[]) => {
     if(err)
       console.err(err);
     else {
-      const displayName = _randomString(7);
+      const displayName = _randomString(Math.floor(Math.random() * (27 - 3) + 3));
       User.create({
         username: displayName.toLowerCase(),
         displayName,
