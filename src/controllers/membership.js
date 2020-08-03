@@ -54,13 +54,6 @@ const getAll = (req, res) => {
           id: project._id,
           name: project.name
         },
-        // memberships: memberships.map(membership => ({
-        //   id: membership._id,
-        //   user: membership.user,
-        //   roles: membership.roles,
-        //   createdOn: membership.createdOn,
-        //   updatedOn: membership.updatedOn
-        // })),
         memberships: memberships.reduce((prev, curr) => {
           if(curr.user.isActive) {
             return prev.concat({

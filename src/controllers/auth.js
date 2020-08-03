@@ -144,15 +144,13 @@ const authorizeDeveloper = (req, res, next) => {
 const authorizeViewer = (req, res, next) => {
   const { user, project } = req;
   
-  // If the project is not private, authorize the user.
-  if(!project.isPrivate)
-    return next();
-  
-  // If we get this far then the Project isPrivate.
-  // Find the requesting users membership for the project and ensure that it is
   Membership.findOne({user: user._id, project: project._id}, (err, membership) => {
     if(err)
       return res.fatalError(err);
+
+    req.requestMembership = membership; // attach the requestMembership
+    if(!project.isPrivate)
+      return next();
 
     if(!membership)
       return res.authorizationError("you must be a project member to perform this action");
@@ -161,7 +159,6 @@ const authorizeViewer = (req, res, next) => {
     if(!isAdmin && !isManager && !isDeveloper && !isViewer)
       return res.authorizationError("you must have viewer permissions to perform this action");
     
-    req.requestMembership = membership;
     next();
   });
 };
