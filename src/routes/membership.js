@@ -3,7 +3,6 @@ import authValidator from "../validators/auth";
 import projectValidator from "../validators/project";
 import membershipValidator from "../validators/membership";
 import membershipController from "../controllers/membership";
-import membership from "../models/membership";
 
 const membershipRoutes = (router) => {
   router.route("/projects/:projectId/memberships")
@@ -34,6 +33,16 @@ const membershipRoutes = (router) => {
     )
 
     .get(membershipController.availableUsers);
+
+  router.route("/projects/:projectId/memberships/all")
+    .all(
+      authValidator.jwtHeader,
+      authController.authenticateToken,
+      projectValidator.projectIdSlug,
+      authController.authorizeManager
+    )
+
+    .get(membershipController.allMemberNames);
 
   router.route("/projects/:projectId/memberships/:membershipId")
     .all(
