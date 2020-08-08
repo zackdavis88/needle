@@ -139,7 +139,7 @@ const availableUsers = (req, res) => {
         return res.fatalError(err);
 
       User
-        .find({_id: {$nin: memberships}})
+        .find({_id: {$nin: memberships}, isActive: true})
         .sort({createdOn: "asc"})
         .distinct("displayName")
         .exec((err, users) => {
@@ -151,11 +151,36 @@ const availableUsers = (req, res) => {
     });
 };
 
+/* Since stories can be assigned to an owner, it would be helpful for the UI to have a method to call
+   to get a full list of project member's usernames.
+*/
+const allMemberNames = (req, res) => {
+  const {project} = req;
+  Membership
+    .find({project: project._id})
+    .sort({createdOn: "asc"})
+    .populate("user", "-_id displayName isActive")
+    .exec((err, memberships) => {
+      if(err)
+        return res.fatalError(err);
+      
+      const users = memberships.reduce((prev, curr) => {
+        if(!curr.user.isActive)
+          return prev;
+        
+        return prev.concat(curr.user.displayName);
+      }, []);
+
+      return res.success("member names successfully retrieved", {users});
+    });
+};
+
 export default {
   create,
   getAll,
   getOne,
   update,
   remove,
-  availableUsers
+  availableUsers,
+  allMemberNames
 };
