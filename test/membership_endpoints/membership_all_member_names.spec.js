@@ -13,28 +13,28 @@ const server = supertest.agent(`https://localhost:${port}`);
 describe("[Membership] All Member Names", () => {
   let authTokenAdmin;
   let authTokenManager;
-  let authTokenDeveloper;
+  let authTokenViewer;
   let authTokenNonMember;
   let testProject;
   let testUserAdmin;
   let testUserManager;
   let testUserNonMember;
-  let testUserDeveloper;
+  let testUserViewer;
   before(done => {
     createTestUser("Password1", (admin) => {
       createTestUser("Password1", (manager) => {
-        createTestUser("Password1", (developer) => {
+        createTestUser("Password1", (viewer) => {
           createTestUser("Password1", (nonmember) => {
             createTestProject(false, admin, (project) => {
               createTestMembership(project, manager, {isManager: true}, () => {
-                createTestMembership(project, developer, {isDeveloper: true}, () => {
+                createTestMembership(project, viewer, {isViewer: true}, () => {
                   authTokenAdmin = generateToken(admin);
                   authTokenManager = generateToken(manager);
-                  authTokenDeveloper = generateToken(developer);
+                  authTokenViewer = generateToken(viewer);
                   authTokenNonMember = generateToken(nonmember);
                   testProject = project;
                   testUserNonMember = nonmember;
-                  testUserDeveloper = developer;
+                  testUserViewer = viewer;
                   testUserAdmin = admin;
                   testUserManager = manager;
                   done();
@@ -87,12 +87,12 @@ describe("[Membership] All Member Names", () => {
         }, done);
     });
 
-    it("should reject requests from members without manager or admin permissions", (done) => {
+    it("should reject requests from members without developer permissions", (done) => {
       server
         .get(`/projects/${testProject._id}/memberships/all`)
-        .set("x-needle-token", authTokenDeveloper)
+        .set("x-needle-token", authTokenViewer)
         .expect(401, {
-          error: "you must have manager permissions to perform this action"
+          error: "you must have developer permissions to perform this action"
         }, done);
     });
 
@@ -111,7 +111,7 @@ describe("[Membership] All Member Names", () => {
           assert.equal(users.indexOf(testUserNonMember.displayName), -1);
           assert.notEqual(users.indexOf(testUserAdmin.displayName), -1);
           assert.notEqual(users.indexOf(testUserManager.displayName), -1);
-          assert.notEqual(users.indexOf(testUserDeveloper.displayName), -1);
+          assert.notEqual(users.indexOf(testUserViewer.displayName), -1);
           done();
         });
     });
