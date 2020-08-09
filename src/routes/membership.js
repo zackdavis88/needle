@@ -39,7 +39,7 @@ const membershipRoutes = (router) => {
       authValidator.jwtHeader,
       authController.authenticateToken,
       projectValidator.projectIdSlug,
-      authController.authorizeManager
+      authController.authorizeDeveloper
     )
 
     .get(membershipController.allMemberNames);
