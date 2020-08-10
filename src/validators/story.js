@@ -20,8 +20,8 @@ const _validateName = (name, isOptional, callback) => {
   if(!compareType(name, "string"))
     return callback("name must be a string");
 
-  if(name.length < 1 || name.length > 300)
-    return callback("name must be 1 - 300 characters in length");
+  if(name.length < 1 || name.length > 100)
+    return callback("name must be 1 - 100 characters in length");
 
   const regex = new RegExp("^[A-Za-z0-9-_+=&^%$#*@!|\/(){}?.,<>;':\" ]+$");
   if(!regex.test(name))
