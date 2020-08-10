@@ -143,7 +143,7 @@ describe("[Story] Update", () => {
         .set("x-needle-token", authTokenDeveloper)
         .send(payload)
         .expect(400, {
-          error: "name must be 1 - 300 characters in length"
+          error: "name must be 1 - 100 characters in length"
         }, done);
     });
 
@@ -154,7 +154,7 @@ describe("[Story] Update", () => {
         .set("x-needle-token", authTokenDeveloper)
         .send(payload)
         .expect(400, {
-          error: "name must be 1 - 300 characters in length"
+          error: "name must be 1 - 100 characters in length"
         }, done);
     });
 
