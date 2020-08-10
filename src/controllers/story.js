@@ -78,14 +78,15 @@ const getAll = (req, res) => {
 };
 
 const getOne = (req, res) => {
-  const { project, story } = req;
+  const { project, story, requestMembership } = req;
   const storyData = {
     id: story._id,
     name: story.name,
     details: story.details,
     project: {
       id: project._id,
-      name: project.name
+      name: project.name,
+      userRoles: requestMembership ? requestMembership.roles : null
     },
     creator: story.creator,
     owner: story.owner || null,
