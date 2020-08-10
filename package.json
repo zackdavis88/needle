@@ -1,6 +1,6 @@
 {
   "name": "needle",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "API used by Compass for agile project backlog",
   "main": "index.js",
   "scripts": {
