@@ -1,6 +1,7 @@
 import Membership from "../models/membership";
 import Story from "../models/story";
 import Project from "../models/project";
+import { query } from "express";
 
 const getProjects = (req, res) => {
   const {user, memberProjects} = req;
@@ -10,9 +11,12 @@ const getProjects = (req, res) => {
     itemsPerPage
   } = req.paginationData;
   const pageOffset = (page - 1) * itemsPerPage;
+  const queryArgs = {_id: {$in: memberProjects}, isActive: true};
+  if(req.query.filterName)
+    queryArgs.name = {$regex: `^${req.query.filterName}`, $options: "i"}
   Project
-    .find({_id: {$in: memberProjects}, isActive: true})
-    .sort({createdOn: "desc"})
+    .find(queryArgs)
+    .sort({createdOn: "asc"})
     .select("-description -isActive")
     .skip(pageOffset)
     .limit(itemsPerPage)
@@ -65,7 +69,7 @@ const getStories = (req, res) => {
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
     .populate("project", "-description")
-    .sort({createdOn: "desc"})
+    .sort({createdOn: "asc"})
     .skip(pageOffset)
     .limit(itemsPerPage)
     .exec((err, stories) => {
