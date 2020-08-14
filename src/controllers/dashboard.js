@@ -1,7 +1,6 @@
 import Membership from "../models/membership";
 import Story from "../models/story";
 import Project from "../models/project";
-import { query } from "express";
 
 const getProjects = (req, res) => {
   const {user, memberProjects} = req;
