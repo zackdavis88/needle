@@ -1,4 +1,5 @@
 import User from "../models/user";
+import Membership from "../models/membership";
 
 const create = (req, res) => {
   const { username, password } = req.body;
@@ -108,18 +109,24 @@ const remove = (req, res) => {
     if(err)
       return res.fatalError(err);
     
-    const userData = {
-      user: {
-        username: user.username,
-        displayName: user.displayName,
-        isActive: user.isActive,
-        createdOn: user.createdOn,
-        updatedOn: user.updatedOn,
-        deletedOn: user.deletedOn
-      }
-    };
-
-    return res.success("user has been successfully deleted", userData);
+    // Since this user is now inactive, we need to cleanup and memberships that were associated.
+    Membership.deleteMany({user: user._id}, err => {
+      if(err)
+        return res.fatalError(err);
+        
+      const userData = {
+        user: {
+          username: user.username,
+          displayName: user.displayName,
+          isActive: user.isActive,
+          createdOn: user.createdOn,
+          updatedOn: user.updatedOn,
+          deletedOn: user.deletedOn
+        }
+      };
+  
+      return res.success("user has been successfully deleted", userData);
+    });
   });
 };
 

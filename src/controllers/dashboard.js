@@ -1,6 +1,7 @@
 import Membership from "../models/membership";
 import Story from "../models/story";
 import Project from "../models/project";
+import {escapeRegex} from "../utils/validator";
 
 const getProjects = (req, res) => {
   const {user, memberProjects} = req;
@@ -12,7 +13,7 @@ const getProjects = (req, res) => {
   const pageOffset = (page - 1) * itemsPerPage;
   const queryArgs = {_id: {$in: memberProjects}, isActive: true};
   if(req.query.filterName)
-    queryArgs.name = {$regex: `^${req.query.filterName}`, $options: "i"}
+    queryArgs.name = {$regex: `^${escapeRegex(req.query.filterName)}`, $options: "i"}
   Project
     .find(queryArgs)
     .sort({createdOn: "asc"})
