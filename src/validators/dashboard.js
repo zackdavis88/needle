@@ -15,6 +15,9 @@ const getProjects = (req, res, next) => {
         return res.fatalError(err);
       
       const countQueryArgs = {_id: {$in: projectIds}, isActive: true};
+      if(query.filterName)
+        countQueryArgs.name = {$regex: `^${query.filterName}`, $options: "i"};
+
       validatePaginationInput(
         Project,
         countQueryArgs,
