@@ -4,9 +4,11 @@ import { port } from "../../config/app";
 import {
   cleanupTestRecords,
   createTestUser,
+  createTestProject,
   generateToken
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
+import Membership from "../../src/models/membership";
 
 describe("[User] Remove", () => {
   let testUser1;
@@ -16,10 +18,12 @@ describe("[User] Remove", () => {
   before((done) => {
     createTestUser("Password1", (user1) => {
       createTestUser("Password1", (user2) => {
-        testUser1 = user1;
-        testUser2 = user2;
-        authToken = generateToken(testUser1);
-        done();
+        createTestProject(false, user1, () => {
+          testUser1 = user1;
+          testUser2 = user2;
+          authToken = generateToken(testUser1);
+          done();
+        });
       });
     });
   });
@@ -108,7 +112,15 @@ describe("[User] Remove", () => {
           assert.equal(isActive, false);
           assert(createdOn);
           assert(deletedOn);
-          done();
+
+          // This user has an admin membership setup in before();
+          // Ensure that the user has no memberships after being deleted.
+          Membership.find({user: testUser1._id}, (err, memberships) => {
+            if(err)
+              return done(err);
+            assert(memberships.length === 0);
+            done();
+          });
         });
     });
   });
