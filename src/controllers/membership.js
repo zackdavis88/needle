@@ -29,15 +29,19 @@ const create = (req, res) => {
 };
 
 const getAll = (req, res) => {
-  const { project } = req;
+  const { project, userIds } = req;
   const {
     page,
     totalPages,
     itemsPerPage
   } = req.paginationData;
   const pageOffset = (page - 1) * itemsPerPage;
+  const queryArgs = {project: project._id};
+  // if userIds is present, we need to filter our results with that array.
+  if(userIds)
+    queryArgs.user = {$in: userIds};
   Membership
-    .find({project: project._id})
+    .find(queryArgs)
     .sort({createdOn: "asc"})
     .populate("user", "-_id username displayName isActive")
     .skip(pageOffset)

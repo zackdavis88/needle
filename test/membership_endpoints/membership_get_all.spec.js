@@ -121,6 +121,21 @@ describe("[Membership] Get All", () => {
         });
     });
 
+    it("should successfully return a paginated list of memberships filtered by username", (done) => {
+      server
+        .get(`/projects/${testProjectPrivate._id}/memberships?filterUsername=${testUserAdmin.username}`)
+        .set("x-needle-token", authTokenAdmin)
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+
+          const { memberships } = res.body;
+          assert.equal(memberships.length, 1);
+          done();
+        });
+    });
+
     it("should successfully return a paginated list of memberships to any user for public projects", (done) => {
       server
         .get(`/projects/${testProjectPublic._id}/memberships`)

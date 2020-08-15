@@ -80,19 +80,51 @@ const create = (req, res, next) => {
 
 const getAll = (req, res, next) => {
   const { project, query } = req;
-  const countQueryArgs = { project: project._id };
-  validatePaginationInput(
-    Membership,
-    countQueryArgs,
-    query, 
-    (err, paginationData) => {
+  // Flow for filtering by username...feels expensive. This may need rework in the future
+  // if performance issues are noticed.
+  if(query.filterUsername) {
+    User
+    .find({username: {$regex: `^${query.filterUsername}`, $options: "i"}})
+    .distinct("_id")
+    .exec((err, userIds) => {
       if(err)
         return res.fatalError(err);
       
-      req.paginationData = paginationData;
-      next();
-    }
-  );
+      const countQueryArgs = {
+        project: project._id,
+        user: {$in: userIds}
+      };
+      validatePaginationInput(
+        Membership,
+        countQueryArgs,
+        query,
+        (err, paginationData) => {
+          if(err)
+            return res.fatalError(err);
+          
+          req.paginationData = paginationData;
+          req.userIds = userIds;
+          next();
+        }
+      );
+    });
+  }
+  // Standard getAll flow.
+  else {
+    const countQueryArgs = { project: project._id };
+    validatePaginationInput(
+      Membership,
+      countQueryArgs,
+      query,
+      (err, paginationData) => {
+        if(err)
+          return res.fatalError(err);
+        
+        req.paginationData = paginationData;
+        next();
+      }
+    );
+  }
 };
 
 const membershipIdSlug = (req, res, next) => {
