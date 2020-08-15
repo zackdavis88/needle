@@ -11,12 +11,14 @@ const server = supertest.agent(`https://localhost:${port}`);
 
 describe("[Dashboard] Get Projects", () => {
   let authToken;
+  let project;
   before(done => {
     createTestUser("Password1", (user) => {
       createTestProject(false, user, (project1) => {
         createTestProject(true, user, (project2) => {
           createTestProject(false, user, (project3) => {
             createTestProject(false, user, (project4) => {
+              project = project1;
               project4.isActive = false;
               project4.save(() => {
                 authToken = generateToken(user);
@@ -55,6 +57,24 @@ describe("[Dashboard] Get Projects", () => {
           assert.equal(message, "dashboard projects successfully retrieved");
           assert(projects);
           assert.equal(projects.length, 3);
+          done();
+        });
+    });
+
+    it("should successfully return dashboard projects details based on filterName query-string", (done) => {
+      server
+        .get(`/dashboard/projects?filterName=${project.name}`)
+        .set("x-needle-token", authToken)
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+          
+          const {message, projects} = res.body;
+          assert.equal(message, "dashboard projects successfully retrieved");
+          assert(projects);
+          assert.equal(projects.length, 1);
+          assert.equal(projects[0].name, project.name);
           done();
         });
     });
