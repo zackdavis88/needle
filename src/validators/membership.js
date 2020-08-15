@@ -6,7 +6,8 @@ import {
   isMissing, 
   validatePaginationInput,
   getOneWithSlug,
-  validateConfirmBoolean
+  validateConfirmBoolean,
+  escapeRegex
 } from "../utils/validator";
 
 const _validateUsername = (username, callback) => {
@@ -83,8 +84,9 @@ const getAll = (req, res, next) => {
   // Flow for filtering by username...feels expensive. This may need rework in the future
   // if performance issues are noticed.
   if(query.filterUsername) {
+    console.log(query);
     User
-    .find({username: {$regex: `^${query.filterUsername}`, $options: "i"}})
+    .find({username: {$regex: `^${escapeRegex(query.filterUsername)}`, $options: "i"}})
     .distinct("_id")
     .exec((err, userIds) => {
       if(err)

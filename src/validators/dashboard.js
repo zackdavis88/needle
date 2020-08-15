@@ -2,7 +2,8 @@ import Project from "../models/project";
 import Membership from "../models/membership";
 import Story from "../models/story";
 import { 
-  validatePaginationInput
+  validatePaginationInput,
+  escapeRegex
 } from "../utils/validator";
 
 const getProjects = (req, res, next) => {
@@ -16,7 +17,7 @@ const getProjects = (req, res, next) => {
       
       const countQueryArgs = {_id: {$in: projectIds}, isActive: true};
       if(query.filterName)
-        countQueryArgs.name = {$regex: `^${query.filterName}`, $options: "i"};
+        countQueryArgs.name = {$regex: `^${escapeRegex(query.filterName)}`, $options: "i"};
 
       validatePaginationInput(
         Project,
