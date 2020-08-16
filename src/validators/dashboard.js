@@ -60,6 +60,8 @@ const getStories = (req, res, next) => {
               {project: {$in: activeMemberProjects}}
             ]
           };
+          if(query.filterName)
+            countQueryArgs.name = {$regex: `^${escapeRegex(query.filterName)}`, $options: "i"}
           
           validatePaginationInput(
             Story,

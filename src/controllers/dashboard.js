@@ -49,23 +49,26 @@ const getProjects = (req, res) => {
 };
 
 const getStories = (req, res) => {
-  const {user, memberProjects} = req;
+  const {user, memberProjects, query} = req;
   const {
     page,
     totalPages,
     itemsPerPage
   } = req.paginationData;
   const pageOffset = (page - 1) * itemsPerPage;
+  const queryArgs = {
+    $and: [
+      {$or: [
+        {owner: user._id},
+        {creator: user._id}
+      ]},
+      {project: {$in: memberProjects}}
+    ]
+  };
+  if(query.filterName)
+    queryArgs.name = {$regex: `^${escapeRegex(query.filterName)}`, $options: "i"}
   Story
-    .find({
-      $and: [
-        {$or: [
-          {owner: user._id},
-          {creator: user._id}
-        ]},
-        {project: {$in: memberProjects}}
-      ]
-    })
+    .find(queryArgs)
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
     .populate("project", "-description")
