@@ -1,4 +1,5 @@
 import Story from "../models/story";
+import {escapeRegex} from "../utils/validator";
 
 const create = (req, res) => {
   const { name, details } = req.body;
@@ -37,15 +38,18 @@ const create = (req, res) => {
 };
 
 const getAll = (req, res) => {
-  const { project } = req;
+  const { project, query } = req;
   const {
     page,
     totalPages,
     itemsPerPage
   } = req.paginationData;
   const pageOffset = (page - 1) * itemsPerPage;
+  const queryArgs = {project: project._id};
+  if(query.filterName)
+    queryArgs.name = {$regex: `^${escapeRegex(query.filterName)}`, $options: "i"};
   Story
-    .find({project: project._id})
+    .find(queryArgs)
     .sort({createdOn: "asc"})
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")

@@ -138,5 +138,21 @@ describe("[Story] Get All", () => {
         .set("x-needle-token", authTokenNonMember)
         .expect(200, done);
     });
+
+    it("should successfully return a paginated list of stories filtered by name", (done) => {
+      server
+        .get(`/projects/${testProjectPrivate._id}/stories?filterName=${testStory.name}`)
+        .set("x-needle-token", authTokenAdmin)
+        .expect(200)
+        .end((err, res) => {
+          if(err)
+            return done(err);
+          
+          const { stories } = res.body;
+          assert.equal(stories.length, 1);
+          assert.equal(stories[0].name, testStory.name);
+          done();
+        });
+    });
   });
 });

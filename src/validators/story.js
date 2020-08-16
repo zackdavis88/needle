@@ -7,7 +7,8 @@ import {
   isMissing, 
   validatePaginationInput, 
   getOneWithSlug,
-  validateConfirmBoolean
+  validateConfirmBoolean,
+  escapeRegex
 } from "../utils/validator";
 
 const _validateName = (name, isOptional, callback) => {
@@ -100,6 +101,8 @@ const create = (req, res, next) => {
 const getAll = (req, res, next) => {
   const { project, query } = req;
   const countQueryArgs = { project: project._id };
+  if(query.filterName)
+    countQueryArgs.name = {$regex: `^${escapeRegex(query.filterName)}`, $options: "i"};
   validatePaginationInput(
     Story,
     countQueryArgs,
