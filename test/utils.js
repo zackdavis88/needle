@@ -87,6 +87,7 @@ export const createTestStory = (project, creator, owner=null, callback) => {
     creator: creator._id,
     project: project._id,
     owner: owner ? owner._id : null,
+    points: Math.floor(Math.random() * 10) + 1, // Random number between 1 - 10.
     createdOn: new Date()
   };
   Story.create(testStory, (err, story) => {

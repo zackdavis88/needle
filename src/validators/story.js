@@ -74,8 +74,24 @@ const _validateOwner = (owner, project, callback) => {
   });
 };
 
+const _validatePoints = (points, callback) => {
+  if(isMissing(points))
+    return callback();
+  
+  if(!compareType(points, "number"))
+    return callback("points must be a number");
+  
+  if(!Number.isInteger(points))
+    return callback("points must be an integer");
+  
+  if(points < 0 || points > 100) //100 is an insane story point value...lets make that the cap for now.
+    return callback("points must be between 0 - 100");
+
+  callback();
+};
+
 const create = (req, res, next) => {
-  const { name, details, owner } = req.body;
+  const { name, details, owner, points } = req.body;
   const { project } = req;
   _validateName(name, false, (err) => {
     if(err)
@@ -91,8 +107,13 @@ const create = (req, res, next) => {
         else if(err)
           return res.validationError(err);
         
-        req.owner = user;
-        next();
+        _validatePoints(points, (err) => {
+          if(err)
+            return res.validationError(err);
+
+          req.owner = user;
+          next();
+        });
       });
     });
   });
@@ -149,7 +170,7 @@ const storyIdSlug = (req, res, next) => {
 };
 
 const update = (req, res, next) => {
-  const { name, details, owner } = req.body;
+  const { name, details, owner, points } = req.body;
   const { project } = req;
   if(isMissing(name) && isMissing(details) && isMissing(owner))
     return res.validationError("request contains no update input");
@@ -168,8 +189,13 @@ const update = (req, res, next) => {
         else if(err)
           return res.validationError(err);
 
-        req.owner = user;
-        next();
+        _validatePoints(points, (err) => {
+          if(err)
+            return res.validationError(err);
+
+          req.owner = user;
+          next();
+        });
       });
     });
   });

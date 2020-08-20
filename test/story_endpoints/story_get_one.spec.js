@@ -138,6 +138,7 @@ describe("[Story] Get One", () => {
           assert(project);
           assert.equal(project.id, testProjectPrivate._id);
           assert.equal(project.name, testProjectPrivate.name);
+          assert(story.points, testStory.points);
           assert(createdOn);
           done();
         });

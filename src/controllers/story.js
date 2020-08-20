@@ -2,7 +2,7 @@ import Story from "../models/story";
 import {escapeRegex} from "../utils/validator";
 
 const create = (req, res) => {
-  const { name, details } = req.body;
+  const { name, details, points } = req.body;
   const { project, user, owner } = req;
   Story.create({
     name,
@@ -10,6 +10,7 @@ const create = (req, res) => {
     creator: user._id,
     owner: owner ? owner._id : undefined,
     project: project._id,
+    points: (!points || parseInt(points) === 0) ? undefined : parseInt(points),
     createdOn: new Date()
   }, (err, story) => {
     if(err)
@@ -31,6 +32,7 @@ const create = (req, res) => {
         id: project._id,
         name: project.name
       },
+      points: story.points,
       createdOn: story.createdOn
     };
     return res.success("story has been successfully created", {story: storyData});
@@ -72,6 +74,7 @@ const getAll = (req, res) => {
           name: story.name,
           creator: story.creator,
           owner: story.owner,
+          points: story.points,
           createdOn: story.createdOn,
           updatedOn: story.updatedOn
         }))
@@ -94,6 +97,7 @@ const getOne = (req, res) => {
     },
     creator: story.creator,
     owner: story.owner || null,
+    points: story.points,
     createdOn: story.createdOn,
     updatedOn: story.updatedOn
   };
@@ -102,7 +106,7 @@ const getOne = (req, res) => {
 };
 
 const update = (req, res) => {
-  const { name, details } = req.body;
+  const { name, details, points } = req.body;
   const ownerInput = req.body.owner;
   const { project, story, owner } = req;
   if(name)
@@ -117,6 +121,11 @@ const update = (req, res) => {
     story.owner = owner._id;
   else if(typeof ownerInput === "string" && !ownerInput.length)
     story.owner = null;
+  
+  if(points)
+    story.points = parseInt(points);
+  else if(parseInt(points) === 0)
+    story.points = null;
   
   story.updatedOn = new Date();
   story.save((err, updatedStory) => {
@@ -133,6 +142,7 @@ const update = (req, res) => {
       },
       creator: story.creator,
       owner: story.owner, // default the owner to whatever we originally pulled from the db.
+      points: updatedStory.points,
       createdOn: updatedStory.createdOn,
       updatedOn: updatedStory.updatedOn
     };

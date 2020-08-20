@@ -6,6 +6,7 @@ const storySchema = mongoose.Schema({
   creator: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   owner: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   project: {type: mongoose.Schema.Types.ObjectId, ref: "Project"},
+  points: Number,
   createdOn: Date,
   updatedOn: Date
 });
