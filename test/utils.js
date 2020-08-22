@@ -3,6 +3,8 @@ import User from "../src/models/user";
 import Project from "../src/models/project";
 import Membership from "../src/models/membership";
 import Story from "../src/models/story";
+import Status from "../src/models/status";
+import Priority from "../src/models/priority";
 import { secret } from "../config/auth";
 import mongoose from "mongoose";
 let cleanupUsernames = [];
@@ -87,6 +89,7 @@ export const createTestStory = (project, creator, owner=null, callback) => {
     creator: creator._id,
     project: project._id,
     owner: owner ? owner._id : null,
+    points: Math.floor(Math.random() * 10) + 1, // Random number between 1 - 10.
     createdOn: new Date()
   };
   Story.create(testStory, (err, story) => {
@@ -95,6 +98,36 @@ export const createTestStory = (project, creator, owner=null, callback) => {
     
     callback(story);
   }); 
+};
+
+export const createTestStatus = (project, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testStatus = {
+    project: project._id,
+    name: randomName,
+    createdOn: new Date()
+  };
+  Status.create(testStatus, (err, status) => {
+    if(err)
+      return console.error(err);
+    
+    callback(status);
+  });
+};
+
+export const createTestPriority = (project, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testPriority = {
+    project: project._id,
+    name: randomName,
+    createdOn: new Date()
+  };
+  Priority.create(testPriority, (err, priority) => {
+    if(err)
+      return console.error(err);
+    
+    callback(priority);
+  });
 };
 
 export const getTestUser = (username, callback) => {
@@ -151,14 +184,24 @@ const cleanupTestProjects = (callback) => {
         if(err)
           return console.error(err);
 
-        Project.deleteOne({_id}, (err) => {
+        Status.deleteMany({project: _id}, (err) => {
           if(err)
             return console.error(err);
-          
-          if(index === array.length - 1){
-            cleanupProjectIds = [];
-            return callback();
-          }
+
+          Priority.deleteMany({project: _id}, (err) => {
+            if(err)
+              return console.error(err);
+            
+            Project.deleteOne({_id}, (err) => {
+              if(err)
+                return console.error(err);
+              
+              if(index === array.length - 1){
+                cleanupProjectIds = [];
+                return callback();
+              }
+            });
+          });
         });
       });
     });

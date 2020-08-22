@@ -147,7 +147,7 @@ describe("[Story] Update", () => {
         }, done);
     });
 
-    it("should reject requests when name is over 300 characters", (done) => {
+    it("should reject requests when name is over 100 characters", (done) => {
       payload.name = new Array(301).fill("a").join("");
       server
         .post(`/projects/${testProject._id}/stories/${testStory._id}`)
@@ -224,7 +224,52 @@ describe("[Story] Update", () => {
         }, done);
     });
 
+    it("should reject requests when points is not a number", (done) => {
+      payload.points = "5";
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be a number"
+        }, done);
+    });
+
+    it("should reject requests when points is not an integer", (done) => {
+      payload.points = 5.5;
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be an integer"
+        }, done);
+    });
+
+    it("should reject requests when points is under 0", (done) => {
+      payload.points = -1;
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be between 0 - 100"
+        }, done);
+    });
+
+    it("should reject requests when points is over 100", (done) => {
+      payload.points = 101;
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be between 0 - 100"
+        }, done);
+    });
+
     it("should successfully update a story", (done) => {
+      payload.points = 2;
       server
         .post(`/projects/${testProject._id}/stories/${testStory._id}`)
         .set("x-needle-token", authTokenDeveloper)
@@ -237,7 +282,7 @@ describe("[Story] Update", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully updated");
           assert(story);
-          const { id, name, details, creator, owner, project, createdOn, updatedOn } = story;
+          const { id, name, details, creator, owner, project, createdOn, updatedOn, points } = story;
           assert.equal(id, testStory._id.toString());
           assert.equal(name, payload.name);
           assert.equal(details, payload.details);
@@ -250,6 +295,7 @@ describe("[Story] Update", () => {
           assert(project);
           assert.equal(project.id, testProject._id.toString());
           assert.equal(project.name, testProject.name);
+          assert.equal(points, 2);
           assert(createdOn);
           assert(updatedOn);
           done();
@@ -259,6 +305,7 @@ describe("[Story] Update", () => {
     it("should successfully remove details or owner fields if requested", (done) => {
       payload.details = "";
       payload.owner = "";
+      payload.points = 0;
       server
         .post(`/projects/${testProject._id}/stories/${testStory._id}`)
         .set("x-needle-token", authTokenDeveloper)
@@ -271,10 +318,11 @@ describe("[Story] Update", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully updated");
           assert(story);
-          const { id, details, owner } = story;
+          const { id, details, owner, points } = story;
           assert.equal(id, testStory._id.toString());
           assert.equal(details, null);
           assert.equal(owner, null);
+          assert.equal(points, null);
           done();
         });
     });

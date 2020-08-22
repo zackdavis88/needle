@@ -128,6 +128,7 @@ describe("[Story] Get All", () => {
           assert.equal(story.owner.username, testUserOwner.username);
           assert.equal(story.owner.displayName, testUserOwner.displayName);
           assert(story.createdOn);
+          assert.equal(story.points, testStory.points);
           done();
         });
     });

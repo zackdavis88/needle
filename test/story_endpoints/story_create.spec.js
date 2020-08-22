@@ -135,7 +135,7 @@ describe("[Story] Create", () => {
         }, done);
     });
 
-    it("should reject requests when name is over 300 characters", (done) => {
+    it("should reject requests when name is over 100 characters", (done) => {
       payload.name = new Array(301).fill("a").join("");
       server
         .post(`/projects/${testProject._id}/stories`)
@@ -212,7 +212,52 @@ describe("[Story] Create", () => {
         }, done);
     });
 
+    it("should reject requests when points is not a number", (done) => {
+      payload.points = "5";
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be a number"
+        }, done);
+    });
+
+    it("should reject requests when points is not an integer", (done) => {
+      payload.points = 5.5;
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be an integer"
+        }, done);
+    });
+
+    it("should reject requests when points is under 0", (done) => {
+      payload.points = -1;
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be between 0 - 100"
+        }, done);
+    });
+
+    it("should reject requests when points is over 100", (done) => {
+      payload.points = 101;
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "points must be between 0 - 100"
+        }, done);
+    });
+
     it("should successfully create a story", (done) => {
+      payload.points = 5;
       server
         .post(`/projects/${testProject._id}/stories`)
         .set("x-needle-token", authTokenDeveloper)
@@ -225,7 +270,7 @@ describe("[Story] Create", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully created");
           assert(story);
-          const { id, name, details, creator, owner, project, createdOn } = story;
+          const { id, name, details, creator, owner, project, points, createdOn } = story;
           assert(id);
           assert.equal(name, payload.name);
           assert.equal(details, payload.details);
@@ -238,6 +283,7 @@ describe("[Story] Create", () => {
           assert(project);
           assert.equal(project.id, testProject._id.toString());
           assert.equal(project.name, testProject.name);
+          assert.equal(points, 5);
           assert(createdOn);
           done();
         });
