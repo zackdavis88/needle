@@ -4,6 +4,7 @@ import Project from "../src/models/project";
 import Membership from "../src/models/membership";
 import Story from "../src/models/story";
 import Status from "../src/models/status";
+import Priority from "../src/models/priority";
 import { secret } from "../config/auth";
 import mongoose from "mongoose";
 let cleanupUsernames = [];
@@ -114,6 +115,21 @@ export const createTestStatus = (project, callback) => {
   });
 };
 
+export const createTestPriority = (project, callback) => {
+  const randomName = mongoose.Types.ObjectId().toString();
+  const testPriority = {
+    project: project._id,
+    name: randomName,
+    createdOn: new Date()
+  };
+  Priority.create(testPriority, (err, priority) => {
+    if(err)
+      return console.error(err);
+    
+    callback(priority);
+  });
+};
+
 export const getTestUser = (username, callback) => {
   User.findOne({username: username.toLowerCase()}, (err, user) => {
     if(err)
@@ -171,15 +187,20 @@ const cleanupTestProjects = (callback) => {
         Status.deleteMany({project: _id}, (err) => {
           if(err)
             return console.error(err);
-            
-          Project.deleteOne({_id}, (err) => {
+
+          Priority.deleteMany({project: _id}, (err) => {
             if(err)
               return console.error(err);
             
-            if(index === array.length - 1){
-              cleanupProjectIds = [];
-              return callback();
-            }
+            Project.deleteOne({_id}, (err) => {
+              if(err)
+                return console.error(err);
+              
+              if(index === array.length - 1){
+                cleanupProjectIds = [];
+                return callback();
+              }
+            });
           });
         });
       });
