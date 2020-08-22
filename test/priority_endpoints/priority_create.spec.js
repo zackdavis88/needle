@@ -161,6 +161,28 @@ describe("[Priority] Create", () => {
         }, done);
     });
 
+    it("should reject requests when color is not a string", (done) => {
+      payload.color = {some: "color"};
+      server
+        .post(`/projects/${testProject._id}/priorities`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color must be a string"
+        }, done);
+    });
+
+    it("should reject requests when color is not a valid format", (done) => {
+      payload.color = "black";
+      server
+        .post(`/projects/${testProject._id}/priorities`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color has invalid format. example #000000"
+        }, done);
+    });
+
     it("should successfully create a priority", (done) => {
       server
         .post(`/projects/${testProject._id}/priorities`)
