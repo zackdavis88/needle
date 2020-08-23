@@ -1,10 +1,11 @@
 import Priority from "../models/priority";
 
 const create = (req, res) => {
-  const {name} = req.body;
+  const {name, color} = req.body;
   const {project} = req;
   Priority.create({
     name,
+    color,
     project: project._id,
     createdOn: new Date()
   }, (err, priority) => {
@@ -18,6 +19,7 @@ const create = (req, res) => {
         name: project.name
       },
       name: priority.name,
+      color: priority.color,
       createdOn: priority.createdOn
     };
 
@@ -54,6 +56,7 @@ const getAll = (req, res) => {
         priorities: priorities.map(priority => ({
           id: priority._id,
           name: priority.name,
+          color: priority.color,
           createdOn: priority.createdOn,
           updatedOn: priority.updatedOn
         }))
@@ -72,6 +75,7 @@ const getOne = (req, res) => {
       name: project.name
     },
     name: projectPriority.name,
+    color: projectPriority.color,
     createdOn: projectPriority.createdOn,
     updatedOn: projectPriority.updatedOn
   };
@@ -80,8 +84,15 @@ const getOne = (req, res) => {
 
 const update = (req, res) => {
   const {project, projectPriority} = req;
-  const {name} = req.body;
-  projectPriority.name = name;
+  const {name, color} = req.body;
+  if(name)
+    projectPriority.name = name;
+  
+  if(color)
+    projectPriority.color = color;
+  else if(typeof color === "string" && !color.length)
+    projectPriority.color = null;
+
   projectPriority.updatedOn = new Date();
   projectPriority.save((err, priority) => {
     if(err)
@@ -94,6 +105,7 @@ const update = (req, res) => {
         name: project.name
       },
       name: priority.name,
+      color: priority.color,
       createdOn: priority.createdOn,
       updatedOn: priority.updatedOn
     };

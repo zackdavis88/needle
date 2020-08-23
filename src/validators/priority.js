@@ -8,7 +8,10 @@ import {
 } from "../utils/validator";
 import mongoose from "mongoose";
 
-const _validateName = (project, name, callback) => {
+const _validateName = (project, name, {isOptional, priority}, callback) => {
+  if(isOptional && isMissing(name))
+    return callback();
+
   if(isMissing(name))
     return callback("name is missing from input");
 
@@ -22,10 +25,17 @@ const _validateName = (project, name, callback) => {
   if(!regex.test(name))
     return callback("name contains invalid characters");
 
-  Priority.findOne({
+  const queryArgs = {
     project: project._id,
-    name
-  }, (err, priority) => {
+    name: {$regex: `^${name}$`, $options: "i"}
+  };
+  
+  // if a priority was passed to this function it means we are updating a priority.
+  // when checking if the name exists, lets ignore the priority we are updating.
+  if(priority)
+    queryArgs._id = {$nin: [priority._id]};
+
+  Priority.findOne(queryArgs, (err, priority) => {
     if(err)
       return callback(err);
     
@@ -36,16 +46,38 @@ const _validateName = (project, name, callback) => {
   });
 };
 
+const _validateColor = (color, callback) => {
+  if(isMissing(color))
+    return callback();
+  
+  if(!compareType(color, "string"))
+    return callback("color must be a string");
+  
+  if(color.length === 0)
+    return callback();
+  
+  const regex = new RegExp("^#[0-9A-Fa-f]{6}$");
+  if(!regex.test(color))
+    return callback("color has invalid format. example #000000");
+  
+  callback();
+};
+
 const create = (req, res, next) => {
   const {project} = req;
-  const {name} = req.body;
-  _validateName(project, name, err => {
+  const {name, color} = req.body;
+  _validateName(project, name, {isOptional: false}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
       return res.validationError(err);
 
-    next();
+    _validateColor(color, (err) => {
+      if(err)
+        return res.validationError(err);
+
+      next();
+    });
   });
 };
 
@@ -94,17 +126,20 @@ const priorityIdSlug = (req, res, next) => {
 
 const update = (req, res, next) => {
   const {project, projectPriority} = req;
-  const {name} = req.body;
-  if(name === projectPriority.name)
-    return res.validationError("input does not contain any changes");
+  const {name, color} = req.body;
 
-  _validateName(project, name, err => {
+  _validateName(project, name, {isOptional: true, priority: projectPriority}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
       return res.validationError(err);
 
-    next();
+    _validateColor(color, (err) => {
+      if(err)
+        return res.validationError(err);
+
+      next();
+    });
   });
 };
 

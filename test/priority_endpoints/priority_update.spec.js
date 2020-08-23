@@ -45,7 +45,8 @@ describe("[Priority] Update", () => {
 
   beforeEach(done => {
     payload = {
-      name: "Test Priority Updated"
+      name: "Test Priority Updated",
+      color: "#000000"
     };
     done();
   });
@@ -117,17 +118,6 @@ describe("[Priority] Update", () => {
         }, done);
     });
 
-    it("should reject requests when name input is missing", (done) => {
-      payload.name = undefined;
-      server
-        .post(`/projects/${testProject._id}/priorities/${testPriority1._id}`)
-        .set("x-needle-token", authTokenAdmin)
-        .send(payload)
-        .expect(400, {
-          error: "name is missing from input"
-        }, done);
-    });
-
     it("should reject requests when name input is not a string", (done) => {
       payload.name = 342342;
       server
@@ -180,6 +170,37 @@ describe("[Priority] Update", () => {
         .send(payload)
         .expect(400, {
           error: "name is already taken"
+        }, done);
+    });
+
+    it("should not reject requests when name is already taken by the priority being updated", (done) => {
+      payload.name = testPriority1.name;
+      server
+        .post(`/projects/${testProject._id}/priorities/${testPriority1._id}`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(200, done);
+    });
+
+    it("should reject requests when color is not a string", (done) => {
+      payload.color = {some: "color"};
+      server
+        .post(`/projects/${testProject._id}/priorities/${testPriority1._id}`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color must be a string"
+        }, done);
+    });
+
+    it("should reject requests when color is not a valid format", (done) => {
+      payload.color = "red";
+      server
+        .post(`/projects/${testProject._id}/priorities/${testPriority1._id}`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color has invalid format. example #000000"
         }, done);
     });
 
