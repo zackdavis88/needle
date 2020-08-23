@@ -1,6 +1,7 @@
 import User from "../models/user";
 import Membership from "../models/membership";
 import Story from "../models/story";
+import Priority from "../models/priority";
 import mongoose from "mongoose";
 import { 
   compareType, 
@@ -90,8 +91,38 @@ const _validatePoints = (points, callback) => {
   callback();
 };
 
+const _validatePriority = (project, priorityName, callback) => {
+  if(isMissing(priorityName))
+    return callback();
+  
+  if(!compareType(priorityName, "string"))
+    return callback("priority must be a string");
+  
+  if(priorityName.length === 0)
+    return callback();
+
+  Priority.findOne({
+    project: project._id,
+    name: {$regex: `^${priorityName}$`, $options: "i"}
+  }, (err, priority) => {
+    if(err)
+      return callback(err);
+    
+    if(!priority)
+      return callback("requested priority does not exist");
+    
+    callback(null, priority);
+  });
+};
+
 const create = (req, res, next) => {
-  const { name, details, owner, points } = req.body;
+  const {
+    name,
+    details,
+    owner,
+    points,
+    priority
+  } = req.body;
   const { project } = req;
   _validateName(name, false, (err) => {
     if(err)
@@ -111,8 +142,16 @@ const create = (req, res, next) => {
           if(err)
             return res.validationError(err);
 
-          req.owner = user;
-          next();
+          _validatePriority(project, priority, (err, priority) => {
+            if(err && err.code)
+              return res.fatalError(err);
+            else if(err)
+              return res.validationError(err);
+            
+            req.requestedPriority = priority;
+            req.owner = user;
+            next();
+          });
         });
       });
     });
@@ -149,7 +188,8 @@ const storyIdSlug = (req, res, next) => {
   const queryOptions = {
     populate: {
       creator: "-_id username displayName",
-      owner: "-_id username displayName"
+      owner: "-_id username displayName",
+      priority: "-_id name color"
     }
   };
   getOneWithSlug(
@@ -170,9 +210,9 @@ const storyIdSlug = (req, res, next) => {
 };
 
 const update = (req, res, next) => {
-  const { name, details, owner, points } = req.body;
+  const { name, details, owner, points, priority } = req.body;
   const { project } = req;
-  if(isMissing(name) && isMissing(details) && isMissing(owner))
+  if(isMissing(name) && isMissing(details) && isMissing(owner) && isMissing(priority))
     return res.validationError("request contains no update input");
   
   _validateName(name, true, (err) => {
@@ -193,8 +233,16 @@ const update = (req, res, next) => {
           if(err)
             return res.validationError(err);
 
-          req.owner = user;
-          next();
+          _validatePriority(project, priority, (err, priority) => {
+            if(err && err.code)
+              return res.fatalError(err);
+            else if(err)
+              return res.validationError(err);
+            
+            req.requestedPriority = priority;
+            req.owner = user;
+            next();
+          })
         });
       });
     });
