@@ -8,7 +8,7 @@ import {
 } from "../utils/validator";
 import mongoose from "mongoose";
 
-const _validateName = (project, name, isOptional, callback) => {
+const _validateName = (project, name, {isOptional, priority}, callback) => {
   if(isOptional && isMissing(name))
     return callback();
 
@@ -25,10 +25,17 @@ const _validateName = (project, name, isOptional, callback) => {
   if(!regex.test(name))
     return callback("name contains invalid characters");
 
-  Priority.findOne({
+  const queryArgs = {
     project: project._id,
-    name
-  }, (err, priority) => {
+    name: {$regex: `^${name}$`, $options: "i"}
+  };
+  
+  // if a priority was passed to this function it means we are updating a priority.
+  // when checking if the name exists, lets ignore the priority we are updating.
+  if(priority)
+    queryArgs._id = {$nin: [priority._id]};
+
+  Priority.findOne(queryArgs, (err, priority) => {
     if(err)
       return callback(err);
     
@@ -46,6 +53,9 @@ const _validateColor = (color, callback) => {
   if(!compareType(color, "string"))
     return callback("color must be a string");
   
+  if(color.length === 0)
+    return callback();
+  
   const regex = new RegExp("^#[0-9A-Fa-f]{6}$");
   if(!regex.test(color))
     return callback("color has invalid format. example #000000");
@@ -56,7 +66,7 @@ const _validateColor = (color, callback) => {
 const create = (req, res, next) => {
   const {project} = req;
   const {name, color} = req.body;
-  _validateName(project, name, false, err => {
+  _validateName(project, name, {isOptional: false}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
@@ -115,10 +125,10 @@ const priorityIdSlug = (req, res, next) => {
 };
 
 const update = (req, res, next) => {
-  const {project} = req;
+  const {project, projectPriority} = req;
   const {name, color} = req.body;
 
-  _validateName(project, name, true, err => {
+  _validateName(project, name, {isOptional: true, priority: projectPriority}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
