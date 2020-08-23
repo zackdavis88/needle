@@ -7,6 +7,7 @@ import {
   createTestProject,
   createTestMembership,
   createTestStory,
+  createTestPriority,
   generateToken,
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
@@ -20,6 +21,8 @@ describe("[Story] Get All", () => {
   let testStory;
   let testUserOwner;
   let testUserCreator;
+  let testPriority1;
+  let testPriority2;
   before(done => {
     createTestUser("Password1", (userAdmin) => {
       createTestUser("Password1", (userNoPermission) => {
@@ -27,18 +30,24 @@ describe("[Story] Get All", () => {
           createTestProject(false, userAdmin, (projectPublic) => {
             createTestProject(true, userAdmin, (projectPrivate) => {
               createTestMembership(projectPrivate, userNoPermission, {isViewer: false}, () => {
-                createTestStory(projectPrivate, userAdmin, userNoPermission, () => {
-                  createTestStory(projectPrivate, userAdmin, userNoPermission, (story) => {
-                    createTestStory(projectPrivate, userAdmin, userNoPermission, () => {
-                      authTokenAdmin = generateToken(userAdmin);
-                      authTokenNonMember = generateToken(userNonMember);
-                      authTokenNoPermission = generateToken(userNoPermission);
-                      testProjectPublic = projectPublic;
-                      testProjectPrivate = projectPrivate;
-                      testStory = story;
-                      testUserOwner = userNoPermission;
-                      testUserCreator = userAdmin;
-                      done();
+                createTestPriority(projectPrivate, (priority1) => {
+                  createTestPriority(projectPrivate, (priority2) => {
+                    createTestStory(projectPrivate, userAdmin, userNoPermission, priority2, () => {
+                      createTestStory(projectPrivate, userAdmin, userNoPermission, priority1, (story) => {
+                        createTestStory(projectPrivate, userAdmin, userNoPermission, null, () => {
+                          authTokenAdmin = generateToken(userAdmin);
+                          authTokenNonMember = generateToken(userNonMember);
+                          authTokenNoPermission = generateToken(userNoPermission);
+                          testProjectPublic = projectPublic;
+                          testProjectPrivate = projectPrivate;
+                          testStory = story;
+                          testUserOwner = userNoPermission;
+                          testUserCreator = userAdmin;
+                          testPriority1 = priority1;
+                          testPriority2 = priority2;
+                          done();
+                        });
+                      });
                     });
                   });
                 });
@@ -129,6 +138,9 @@ describe("[Story] Get All", () => {
           assert.equal(story.owner.displayName, testUserOwner.displayName);
           assert(story.createdOn);
           assert.equal(story.points, testStory.points);
+          assert(story.priority);
+          assert.equal(story.priority.name, testPriority1.name);
+          assert.equal(story.priority.color, testPriority1.color);
           done();
         });
     });

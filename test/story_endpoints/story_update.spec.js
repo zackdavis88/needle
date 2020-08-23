@@ -7,8 +7,10 @@ import {
   createTestProject,
   createTestMembership,
   createTestStory,
+  createTestPriority,
   generateToken,
 } from "../utils";
+import priority from "../../src/models/priority";
 const server = supertest.agent(`https://localhost:${port}`);
 
 describe("[Story] Update", () => {
@@ -20,6 +22,7 @@ describe("[Story] Update", () => {
   let testUserNonMember;
   let testProject;
   let testStory;
+  let testPriority;
   let payload;
   before(done => {
     createTestUser("Password1", (userAdmin) => {
@@ -27,18 +30,21 @@ describe("[Story] Update", () => {
         createTestUser("Password1", (userViewer) => {
           createTestUser("Password1", (userNonMember) => {
             createTestProject(false, userAdmin, (project) => {
-              createTestMembership(project, userDeveloper, {isDeveloper: true}, () => {
-                createTestMembership(project, userViewer, {isViewer: true}, () => {
-                  createTestStory(project, userDeveloper, null, (story) => {
-                    authTokenDeveloper = generateToken(userDeveloper);
-                    authTokenViewer = generateToken(userViewer);
-                    authTokenNonMember = generateToken(userNonMember);
-                    testUserDeveloper = userDeveloper;
-                    testUserViewer = userViewer;
-                    testUserNonMember = userNonMember;
-                    testProject = project;
-                    testStory = story;
-                    done();
+              createTestPriority(project, (priority) => {
+                createTestMembership(project, userDeveloper, {isDeveloper: true}, () => {
+                  createTestMembership(project, userViewer, {isViewer: true}, () => {
+                    createTestStory(project, userDeveloper, null, null, (story) => {
+                      authTokenDeveloper = generateToken(userDeveloper);
+                      authTokenViewer = generateToken(userViewer);
+                      authTokenNonMember = generateToken(userNonMember);
+                      testUserDeveloper = userDeveloper;
+                      testUserViewer = userViewer;
+                      testUserNonMember = userNonMember;
+                      testProject = project;
+                      testStory = story;
+                      testPriority = priority;
+                      done();
+                    });
                   });
                 });
               });
@@ -268,8 +274,31 @@ describe("[Story] Update", () => {
         }, done);
     });
 
+    it("should reject requests when priority is not a string", (done) => {
+      payload.priority = 1;
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "priority must be a string"
+        }, done);
+    });
+
+    it("should reject requests when the requested priority does not exist", (done) => {
+      payload.priority = "something that doesnt exist";
+      server
+        .post(`/projects/${testProject._id}/stories/${testStory._id}`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "requested priority does not exist"
+        }, done);
+    });
+
     it("should successfully update a story", (done) => {
       payload.points = 2;
+      payload.priority = testPriority.name.toLowerCase();
       server
         .post(`/projects/${testProject._id}/stories/${testStory._id}`)
         .set("x-needle-token", authTokenDeveloper)
@@ -282,7 +311,7 @@ describe("[Story] Update", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully updated");
           assert(story);
-          const { id, name, details, creator, owner, project, createdOn, updatedOn, points } = story;
+          const { id, name, details, creator, owner, project, createdOn, updatedOn, points, priority } = story;
           assert.equal(id, testStory._id.toString());
           assert.equal(name, payload.name);
           assert.equal(details, payload.details);
@@ -296,16 +325,20 @@ describe("[Story] Update", () => {
           assert.equal(project.id, testProject._id.toString());
           assert.equal(project.name, testProject.name);
           assert.equal(points, 2);
+          assert(priority);
+          assert.equal(priority.name, testPriority.name);
+          assert.equal(priority.color, testPriority.color);
           assert(createdOn);
           assert(updatedOn);
           done();
         });
     });
 
-    it("should successfully remove details or owner fields if requested", (done) => {
+    it("should successfully remove details, owner, points, or priority fields if requested", (done) => {
       payload.details = "";
       payload.owner = "";
       payload.points = 0;
+      payload.priority = "";
       server
         .post(`/projects/${testProject._id}/stories/${testStory._id}`)
         .set("x-needle-token", authTokenDeveloper)
@@ -318,11 +351,12 @@ describe("[Story] Update", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully updated");
           assert(story);
-          const { id, details, owner, points } = story;
+          const { id, details, owner, points, priority } = story;
           assert.equal(id, testStory._id.toString());
           assert.equal(details, null);
           assert.equal(owner, null);
           assert.equal(points, null);
+          assert.equal(priority, null);
           done();
         });
     });
