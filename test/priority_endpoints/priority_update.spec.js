@@ -173,6 +173,15 @@ describe("[Priority] Update", () => {
         }, done);
     });
 
+    it("should not reject requests when name is already taken by the priority being updated", (done) => {
+      payload.name = testPriority1.name;
+      server
+        .post(`/projects/${testProject._id}/priorities/${testPriority1._id}`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(200, done);
+    });
+
     it("should reject requests when color is not a string", (done) => {
       payload.color = {some: "color"};
       server
