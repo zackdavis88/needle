@@ -36,7 +36,7 @@ describe("[Project] Get One", () => {
             createTestProject(false, testUserAdmin, (project) => {
               testProjectPublic = project;
               createTestMembership(testProjectPrivate, testUserNoPermissions, {isViewer: false}, () => {
-                createTestStory(testProjectPrivate, testUserAdmin, false, (story) => {
+                createTestStory(testProjectPrivate, testUserAdmin, false, null, (story) => {
                   done();
                 });
               });

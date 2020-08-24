@@ -7,6 +7,7 @@ import {
   createTestProject,
   createTestMembership,
   createTestStory,
+  createTestPriority,
   generateToken,
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
@@ -20,6 +21,7 @@ describe("[Story] Get One", () => {
   let testStory;
   let testStoryPublic;
   let testUserCreator;
+  let testPriority;
   before(done => {
     createTestUser("Password1", (userAdmin) => {
       createTestUser("Password1", (userNoPermission) => {
@@ -27,17 +29,20 @@ describe("[Story] Get One", () => {
           createTestProject(false, userAdmin, (projectPublic) => {
             createTestProject(true, userAdmin, (projectPrivate) => {
               createTestMembership(projectPrivate, userNoPermission, {isViewer: false}, () => {
-                createTestStory(projectPrivate, userAdmin, null, (story) => {
-                  createTestStory(projectPublic, userAdmin, null, (storyPublic) => {
-                    authTokenAdmin = generateToken(userAdmin);
-                    authTokenNonMember = generateToken(userNonMember);
-                    authTokenNoPermission = generateToken(userNoPermission);
-                    testProjectPublic = projectPublic;
-                    testProjectPrivate = projectPrivate;
-                    testStory = story;
-                    testStoryPublic = storyPublic;
-                    testUserCreator = userAdmin;
-                    done();
+                createTestPriority(projectPrivate, (priority) => {
+                  createTestStory(projectPrivate, userAdmin, null, priority, (story) => {
+                    createTestStory(projectPublic, userAdmin, null, null, (storyPublic) => {
+                      authTokenAdmin = generateToken(userAdmin);
+                      authTokenNonMember = generateToken(userNonMember);
+                      authTokenNoPermission = generateToken(userNoPermission);
+                      testProjectPublic = projectPublic;
+                      testProjectPrivate = projectPrivate;
+                      testStory = story;
+                      testStoryPublic = storyPublic;
+                      testUserCreator = userAdmin;
+                      testPriority = priority;
+                      done();
+                    });
                   });
                 });
               });
@@ -139,6 +144,9 @@ describe("[Story] Get One", () => {
           assert.equal(project.id, testProjectPrivate._id);
           assert.equal(project.name, testProjectPrivate.name);
           assert(story.points, testStory.points);
+          assert(story.priority);
+          assert.equal(story.priority.name, testPriority.name);
+          assert.equal(story.priority.color, testPriority.color);
           assert(createdOn);
           done();
         });

@@ -3,7 +3,7 @@ import {escapeRegex} from "../utils/validator";
 
 const create = (req, res) => {
   const { name, details, points } = req.body;
-  const { project, user, owner } = req;
+  const { project, user, owner, requestedPriority } = req;
   Story.create({
     name,
     details: details.length ? details : undefined,
@@ -11,6 +11,7 @@ const create = (req, res) => {
     owner: owner ? owner._id : undefined,
     project: project._id,
     points: (!points || parseInt(points) === 0) ? undefined : parseInt(points),
+    priority: requestedPriority ? requestedPriority._id : undefined,
     createdOn: new Date()
   }, (err, story) => {
     if(err)
@@ -33,6 +34,10 @@ const create = (req, res) => {
         name: project.name
       },
       points: story.points,
+      priority: !requestedPriority ? undefined : {
+        name: requestedPriority.name,
+        color: requestedPriority.color
+      },
       createdOn: story.createdOn
     };
     return res.success("story has been successfully created", {story: storyData});
@@ -55,6 +60,7 @@ const getAll = (req, res) => {
     .sort({createdOn: "asc"})
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
+    .populate("priority", "-_id name color")
     .skip(pageOffset)
     .limit(itemsPerPage)
     .exec((err, stories) => {
@@ -75,6 +81,7 @@ const getAll = (req, res) => {
           creator: story.creator,
           owner: story.owner,
           points: story.points,
+          priority: story.priority,
           createdOn: story.createdOn,
           updatedOn: story.updatedOn
         }))
@@ -98,6 +105,7 @@ const getOne = (req, res) => {
     creator: story.creator,
     owner: story.owner || null,
     points: story.points,
+    priority: !story.priority ? undefined : story.priority,
     createdOn: story.createdOn,
     updatedOn: story.updatedOn
   };
@@ -106,9 +114,9 @@ const getOne = (req, res) => {
 };
 
 const update = (req, res) => {
-  const { name, details, points } = req.body;
+  const { name, details, points, priority } = req.body;
   const ownerInput = req.body.owner;
-  const { project, story, owner } = req;
+  const { project, story, owner, requestedPriority } = req;
   if(name)
     story.name = name;
   
@@ -126,6 +134,11 @@ const update = (req, res) => {
     story.points = parseInt(points);
   else if(parseInt(points) === 0)
     story.points = null;
+
+  if(requestedPriority)
+    story.priority = requestedPriority._id;
+  else if(typeof priority === "string" && !priority.length)
+    story.priority = null;
   
   story.updatedOn = new Date();
   story.save((err, updatedStory) => {
@@ -143,6 +156,7 @@ const update = (req, res) => {
       creator: story.creator,
       owner: story.owner, // default the owner to whatever we originally pulled from the db.
       points: updatedStory.points,
+      priority: story.priority,
       createdOn: updatedStory.createdOn,
       updatedOn: updatedStory.updatedOn
     };
@@ -152,6 +166,12 @@ const update = (req, res) => {
       storyData.owner = {username: owner.username, displayName: owner.displayName};
     else if(typeof ownerInput === "string" && !ownerInput.length)
       storyData.owner = null;
+
+    // If the priority field was updated or removed, ensure the storyData variable reflects that.
+    if(requestedPriority)
+      storyData.priority = {name: requestedPriority.name, color: requestedPriority.color};
+    else if(typeof priority === "string" && !priority.length)
+      storyData.priority = null;
 
     return res.success("story has been successfully updated", {story: storyData});
   });
