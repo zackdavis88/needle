@@ -204,6 +204,17 @@ describe("[Status] Update", () => {
         }, done);
     });
 
+    it("should reject requests when transparent is not a boolean", (done) => {
+      payload.transparent = 1;
+      server
+        .post(`/projects/${testProject._id}/status/${testStatus1._id}`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "transparent must be a boolean"
+        }, done);
+    });
+
     it("should successfully update the requested status", (done) => {
       server
         .post(`/projects/${testProject._id}/status/${testStatus1._id}`)

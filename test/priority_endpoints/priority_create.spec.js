@@ -183,6 +183,17 @@ describe("[Priority] Create", () => {
         }, done);
     });
 
+    it("should reject requests when transparent is not a boolean", (done) => {
+      payload.transparent = "#00000000";
+      server
+        .post(`/projects/${testProject._id}/priorities`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "transparent must be a boolean"
+        }, done);
+    });
+
     it("should successfully create a priority", (done) => {
       server
         .post(`/projects/${testProject._id}/priorities`)
