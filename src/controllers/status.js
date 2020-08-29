@@ -1,10 +1,11 @@
 import Status from "../models/status";
 
 const create = (req, res) => {
-  const {name} = req.body;
+  const {name, color} = req.body;
   const {project} = req;
   Status.create({
     name,
+    color,
     project: project._id,
     createdOn: new Date()
   }, (err, status) => {
@@ -18,6 +19,7 @@ const create = (req, res) => {
         name: project.name
       },
       name: status.name,
+      color: status.color,
       createdOn: status.createdOn
     };
 
@@ -39,7 +41,7 @@ const getAll = (req, res) => {
     .sort({createdOn: "asc"})
     .skip(pageOffset)
     .limit(itemsPerPage)
-    .exec((err, status) => {
+    .exec((err, statusList) => {
       if(err)
         return res.fatalError(err);
       
@@ -51,9 +53,10 @@ const getAll = (req, res) => {
           id: project._id,
           name: project.name
         },
-        status: status.map(status => ({
+        status: statusList.map(status => ({
           id: status._id,
           name: status.name,
+          color: status.color,
           createdOn: status.createdOn,
           updatedOn: status.updatedOn
         }))
@@ -72,6 +75,7 @@ const getOne = (req, res) => {
       name: project.name
     },
     name: projectStatus.name,
+    color: projectStatus.color,
     createdOn: projectStatus.createdOn,
     updatedOn: projectStatus.updatedOn
   };
@@ -80,8 +84,15 @@ const getOne = (req, res) => {
 
 const update = (req, res) => {
   const {project, projectStatus} = req;
-  const {name} = req.body;
-  projectStatus.name = name;
+  const {name, color} = req.body;
+  if(name)
+    projectStatus.name = name;
+  
+  if(color)
+    projectStatus.color = color;
+  else if(typeof color === "string" && !color.length)
+    projectStatus.color = null;
+
   projectStatus.updatedOn = new Date();
   projectStatus.save((err, status) => {
     if(err)
@@ -94,6 +105,7 @@ const update = (req, res) => {
         name: project.name
       },
       name: status.name,
+      color: status.color,
       createdOn: status.createdOn,
       updatedOn: status.updatedOn
     };
