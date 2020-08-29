@@ -1,11 +1,12 @@
 import Priority from "../models/priority";
 
 const create = (req, res) => {
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
   const {project} = req;
   Priority.create({
     name,
     color,
+    transparent,
     project: project._id,
     createdOn: new Date()
   }, (err, priority) => {
@@ -20,6 +21,7 @@ const create = (req, res) => {
       },
       name: priority.name,
       color: priority.color,
+      transparent: priority.transparent,
       createdOn: priority.createdOn
     };
 
@@ -57,6 +59,7 @@ const getAll = (req, res) => {
           id: priority._id,
           name: priority.name,
           color: priority.color,
+          transparent: priority.transparent,
           createdOn: priority.createdOn,
           updatedOn: priority.updatedOn
         }))
@@ -76,6 +79,7 @@ const getOne = (req, res) => {
     },
     name: projectPriority.name,
     color: projectPriority.color,
+    transparent: projectPriority.transparent,
     createdOn: projectPriority.createdOn,
     updatedOn: projectPriority.updatedOn
   };
@@ -84,7 +88,7 @@ const getOne = (req, res) => {
 
 const update = (req, res) => {
   const {project, projectPriority} = req;
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
   if(name)
     projectPriority.name = name;
   
@@ -92,6 +96,9 @@ const update = (req, res) => {
     projectPriority.color = color;
   else if(typeof color === "string" && !color.length)
     projectPriority.color = null;
+
+  if(typeof transparent === "boolean")
+    projectPriority.transparent = transparent;
 
   projectPriority.updatedOn = new Date();
   projectPriority.save((err, priority) => {
@@ -106,6 +113,7 @@ const update = (req, res) => {
       },
       name: priority.name,
       color: priority.color,
+      transparent: priority.transparent,
       createdOn: priority.createdOn,
       updatedOn: priority.updatedOn
     };

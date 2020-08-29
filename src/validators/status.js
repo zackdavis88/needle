@@ -5,7 +5,8 @@ import {
   validatePaginationInput, 
   getOneWithSlug,
   validateConfirmBoolean,
-  validateColor
+  validateColor,
+  validateTransparent
 } from "../utils/validator";
 import mongoose from "mongoose";
 
@@ -47,7 +48,7 @@ const _validateName = (project, name, {isOptional, status}, callback) => {
 
 const create = (req, res, next) => {
   const {project} = req;
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
   _validateName(project, name, {isOptional: false}, err => {
     if(err && err.code)
       return res.fatalError(err);
@@ -58,7 +59,12 @@ const create = (req, res, next) => {
       if(err)
         return res.validationError(err);
 
-      next();
+      validateTransparent(transparent, (err) => {
+        if(err)
+          return res.validationError(err);
+        
+        next();
+      });
     });
   });
 };
@@ -108,7 +114,7 @@ const statusIdSlug = (req, res, next) => {
 
 const update = (req, res, next) => {
   const {project, projectStatus} = req;
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
 
   _validateName(project, name, {isOptional: true, status: projectStatus}, err => {
     if(err && err.code)
@@ -120,7 +126,12 @@ const update = (req, res, next) => {
       if(err)
         return res.validationError(err);
 
-      next();
+      validateTransparent(transparent, (err) => {
+        if(err)
+          return res.validationError(err);
+        
+        next();
+      });
     });
   });
 };
