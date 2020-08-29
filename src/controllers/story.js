@@ -60,7 +60,7 @@ const getAll = (req, res) => {
     .sort({createdOn: "asc"})
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
-    .populate("priority", "-_id name color")
+    .populate("priority", "-_id name color transparent")
     .skip(pageOffset)
     .limit(itemsPerPage)
     .exec((err, stories) => {

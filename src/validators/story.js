@@ -189,7 +189,7 @@ const storyIdSlug = (req, res, next) => {
     populate: {
       creator: "-_id username displayName",
       owner: "-_id username displayName",
-      priority: "-_id name color"
+      priority: "-_id name color transparent"
     }
   };
   getOneWithSlug(
