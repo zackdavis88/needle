@@ -7,6 +7,7 @@ const storySchema = mongoose.Schema({
   owner: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   project: {type: mongoose.Schema.Types.ObjectId, ref: "Project"},
   priority: {type: mongoose.Schema.Types.ObjectId, ref: "Priority"},
+  status: {type: mongoose.Schema.Types.ObjectId, ref: "Status"},
   points: Number,
   createdOn: Date,
   updatedOn: Date
