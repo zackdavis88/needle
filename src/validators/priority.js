@@ -4,7 +4,8 @@ import {
   isMissing, 
   validatePaginationInput, 
   getOneWithSlug,
-  validateConfirmBoolean
+  validateConfirmBoolean,
+  validateColor
 } from "../utils/validator";
 import mongoose from "mongoose";
 
@@ -46,23 +47,6 @@ const _validateName = (project, name, {isOptional, priority}, callback) => {
   });
 };
 
-const _validateColor = (color, callback) => {
-  if(isMissing(color))
-    return callback();
-  
-  if(!compareType(color, "string"))
-    return callback("color must be a string");
-  
-  if(color.length === 0)
-    return callback();
-  
-  const regex = new RegExp("^#[0-9A-Fa-f]{6}$");
-  if(!regex.test(color))
-    return callback("color has invalid format. example #000000");
-  
-  callback();
-};
-
 const create = (req, res, next) => {
   const {project} = req;
   const {name, color} = req.body;
@@ -72,7 +56,7 @@ const create = (req, res, next) => {
     else if(err)
       return res.validationError(err);
 
-    _validateColor(color, (err) => {
+    validateColor(color, (err) => {
       if(err)
         return res.validationError(err);
 
@@ -134,7 +118,7 @@ const update = (req, res, next) => {
     else if(err)
       return res.validationError(err);
 
-    _validateColor(color, (err) => {
+    validateColor(color, (err) => {
       if(err)
         return res.validationError(err);
 

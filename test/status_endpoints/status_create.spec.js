@@ -107,7 +107,7 @@ describe("[Status] Create", () => {
     });
 
     it("should reject requests when name input is not a string", (done) => {
-      payload.name = 342342;
+      payload.name = {something: "wrong"};
       server
         .post(`/projects/${testProject._id}/status`)
         .set("x-needle-token", authTokenAdmin)
@@ -158,6 +158,28 @@ describe("[Status] Create", () => {
         .send(payload)
         .expect(400, {
           error: "name is already taken"
+        }, done);
+    });
+
+    it("should reject requests when color is not a string", (done) => {
+      payload.color = {some: "color"};
+      server
+        .post(`/projects/${testProject._id}/status`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color must be a string"
+        }, done);
+    });
+
+    it("should reject requests when color is not a valid format", (done) => {
+      payload.color = "black";
+      server
+        .post(`/projects/${testProject._id}/status`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "color has invalid format. example #000000"
         }, done);
     });
 

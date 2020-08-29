@@ -94,3 +94,20 @@ export const validateConfirmBoolean = (inputValue, callback) => {
 export const escapeRegex = (string) => {
   return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+
+export const validateColor = (color, callback) => {
+  if(isMissing(color))
+    return callback();
+  
+  if(!compareType(color, "string"))
+    return callback("color must be a string");
+  
+  if(color.length === 0)
+    return callback();
+  
+  const regex = new RegExp("^#[0-9A-Fa-f]{6}$");
+  if(!regex.test(color))
+    return callback("color has invalid format. example #000000");
+  
+  callback();
+};

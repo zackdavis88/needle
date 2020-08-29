@@ -4,11 +4,15 @@ import {
   isMissing, 
   validatePaginationInput, 
   getOneWithSlug,
-  validateConfirmBoolean
+  validateConfirmBoolean,
+  validateColor
 } from "../utils/validator";
 import mongoose from "mongoose";
 
-const _validateName = (project, name, callback) => {
+const _validateName = (project, name, {isOptional, status}, callback) => {
+  if(isOptional && isMissing(name))
+    return callback();
+
   if(isMissing(name))
     return callback("name is missing from input");
 
@@ -22,10 +26,15 @@ const _validateName = (project, name, callback) => {
   if(!regex.test(name))
     return callback("name contains invalid characters");
 
-  Status.findOne({
+  const queryArgs = {
     project: project._id,
-    name
-  }, (err, status) => {
+    name: {$regex: `^${name}$`, $options: "i"}
+  };
+  
+  if(status)
+    queryArgs._id = {$nin: [status._id]};
+
+  Status.findOne(queryArgs, (err, status) => {
     if(err)
       return callback(err);
     
@@ -38,14 +47,19 @@ const _validateName = (project, name, callback) => {
 
 const create = (req, res, next) => {
   const {project} = req;
-  const {name} = req.body;
-  _validateName(project, name, err => {
+  const {name, color} = req.body;
+  _validateName(project, name, {isOptional: false}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
       return res.validationError(err);
 
-    next();
+    validateColor(color, (err) => {
+      if(err)
+        return res.validationError(err);
+
+      next();
+    });
   });
 };
 
@@ -94,17 +108,20 @@ const statusIdSlug = (req, res, next) => {
 
 const update = (req, res, next) => {
   const {project, projectStatus} = req;
-  const {name} = req.body;
-  if(name === projectStatus.name)
-    return res.validationError("input does not contain any changes");
+  const {name, color} = req.body;
 
-  _validateName(project, name, err => {
+  _validateName(project, name, {isOptional: true, status: projectStatus}, err => {
     if(err && err.code)
       return res.fatalError(err);
     else if(err)
       return res.validationError(err);
 
-    next();
+    validateColor(color, (err) => {
+      if(err)
+        return res.validationError(err);
+
+      next();
+    });
   });
 };
 
