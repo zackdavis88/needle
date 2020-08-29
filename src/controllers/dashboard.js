@@ -72,7 +72,7 @@ const getStories = (req, res) => {
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
     .populate("project", "-description")
-    .populate("priority", "-_id name color")
+    .populate("priority", "-_id name color transparent")
     .sort({createdOn: "asc"})
     .skip(pageOffset)
     .limit(itemsPerPage)

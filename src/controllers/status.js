@@ -1,11 +1,12 @@
 import Status from "../models/status";
 
 const create = (req, res) => {
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
   const {project} = req;
   Status.create({
     name,
     color,
+    transparent,
     project: project._id,
     createdOn: new Date()
   }, (err, status) => {
@@ -20,6 +21,7 @@ const create = (req, res) => {
       },
       name: status.name,
       color: status.color,
+      transparent: status.transparent,
       createdOn: status.createdOn
     };
 
@@ -57,6 +59,7 @@ const getAll = (req, res) => {
           id: status._id,
           name: status.name,
           color: status.color,
+          transparent: status.transparent,
           createdOn: status.createdOn,
           updatedOn: status.updatedOn
         }))
@@ -76,6 +79,7 @@ const getOne = (req, res) => {
     },
     name: projectStatus.name,
     color: projectStatus.color,
+    transparent: projectStatus.transparent,
     createdOn: projectStatus.createdOn,
     updatedOn: projectStatus.updatedOn
   };
@@ -84,7 +88,7 @@ const getOne = (req, res) => {
 
 const update = (req, res) => {
   const {project, projectStatus} = req;
-  const {name, color} = req.body;
+  const {name, color, transparent} = req.body;
   if(name)
     projectStatus.name = name;
   
@@ -92,6 +96,9 @@ const update = (req, res) => {
     projectStatus.color = color;
   else if(typeof color === "string" && !color.length)
     projectStatus.color = null;
+
+  if(typeof transparent === "boolean")
+    projectStatus.transparent = transparent;
 
   projectStatus.updatedOn = new Date();
   projectStatus.save((err, status) => {
@@ -106,6 +113,7 @@ const update = (req, res) => {
       },
       name: status.name,
       color: status.color,
+      transparent: status.transparent,
       createdOn: status.createdOn,
       updatedOn: status.updatedOn
     };

@@ -111,3 +111,13 @@ export const validateColor = (color, callback) => {
   
   callback();
 };
+
+export const validateTransparent = (transparent, callback) => {
+  if(isMissing(transparent))
+    return callback();
+  
+  if(!compareType(transparent, "boolean"))
+    return callback("transparent must be a boolean");
+  
+  return callback();
+};
