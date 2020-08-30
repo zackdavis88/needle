@@ -104,7 +104,7 @@ const _validateConfig = (project, configInput, configName, model, callback) => {
 
   model.findOne({
     project: project._id,
-    name: {$regex: `^${configInput}$`, $options: "i"}
+    name: {$regex: `^${escapeRegex(configInput)}$`, $options: "i"}
   }, (err, modelInstance) => {
     if(err)
       return callback(err);
