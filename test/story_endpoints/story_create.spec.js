@@ -7,7 +7,8 @@ import {
   createTestProject,
   createTestMembership,
   createTestPriority,
-  generateToken,
+  createTestStatus,
+  generateToken
 } from "../utils";
 const server = supertest.agent(`https://localhost:${port}`);
 
@@ -20,6 +21,7 @@ describe("[Story] Create", () => {
   let testUserNonMember;
   let testProject;
   let testPriority;
+  let testStatus;
   let payload;
   before(done => {
     createTestUser("Password1", (userAdmin) => {
@@ -30,15 +32,18 @@ describe("[Story] Create", () => {
               createTestMembership(project, userDeveloper, {isDeveloper: true}, () => {
                 createTestMembership(project, userViewer, {isViewer: true}, () => {
                   createTestPriority(project, (priority) => {
-                    authTokenDeveloper = generateToken(userDeveloper);
-                    authTokenViewer = generateToken(userViewer);
-                    authTokenNonMember = generateToken(userNonMember);
-                    testUserDeveloper = userDeveloper;
-                    testUserViewer = userViewer;
-                    testUserNonMember = userNonMember;
-                    testProject = project;
-                    testPriority = priority;
-                    done();
+                    createTestStatus(project, (status) => {
+                      authTokenDeveloper = generateToken(userDeveloper);
+                      authTokenViewer = generateToken(userViewer);
+                      authTokenNonMember = generateToken(userNonMember);
+                      testUserDeveloper = userDeveloper;
+                      testUserViewer = userViewer;
+                      testUserNonMember = userNonMember;
+                      testProject = project;
+                      testPriority = priority;
+                      testStatus = status;
+                      done();
+                    });
                   });
                 });
               });
@@ -283,9 +288,32 @@ describe("[Story] Create", () => {
         }, done);
     });
 
+    it("should reject requests when status is not a string", (done) => {
+      payload.status = 1;
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "status must be a string"
+        }, done);
+    });
+
+    it("should reject requests when the requested status does not exist", (done) => {
+      payload.status = "something that doesnt exist";
+      server
+        .post(`/projects/${testProject._id}/stories`)
+        .set("x-needle-token", authTokenDeveloper)
+        .send(payload)
+        .expect(400, {
+          error: "requested status does not exist"
+        }, done);
+    });
+
     it("should successfully create a story", (done) => {
       payload.points = 5;
       payload.priority = testPriority.name.toLowerCase(); // priority validation is not case sensitive.
+      payload.status = testStatus.name.toUpperCase();
       server
         .post(`/projects/${testProject._id}/stories`)
         .set("x-needle-token", authTokenDeveloper)
@@ -298,7 +326,7 @@ describe("[Story] Create", () => {
           const { message, story } = res.body;
           assert.equal(message, "story has been successfully created");
           assert(story);
-          const { id, name, details, creator, owner, project, points, priority, createdOn } = story;
+          const { id, name, details, creator, owner, project, points, priority, status, createdOn } = story;
           assert(id);
           assert.equal(name, payload.name);
           assert.equal(details, payload.details);
@@ -315,6 +343,9 @@ describe("[Story] Create", () => {
           assert(priority);
           assert.equal(priority.name, testPriority.name);
           assert.equal(priority.color, testPriority.color);
+          assert(status);
+          assert.equal(status.name, testStatus.name);
+          assert.equal(status.color, testStatus.color);
           assert(createdOn);
           done();
         });

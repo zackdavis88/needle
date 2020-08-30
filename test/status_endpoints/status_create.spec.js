@@ -183,6 +183,17 @@ describe("[Status] Create", () => {
         }, done);
     });
 
+    it("should reject requests when transparent is not a boolean", (done) => {
+      payload.transparent = "yes";
+      server
+        .post(`/projects/${testProject._id}/status`)
+        .set("x-needle-token", authTokenAdmin)
+        .send(payload)
+        .expect(400, {
+          error: "transparent must be a boolean"
+        }, done);
+    });
+
     it("should successfully create a status", (done) => {
       server
         .post(`/projects/${testProject._id}/status`)

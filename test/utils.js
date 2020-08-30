@@ -81,7 +81,7 @@ export const createTestMembership = (project, user, roles, callback) => {
   });
 };
 
-export const createTestStory = (project, creator, owner=null, priority=null, callback) => {
+export const createTestStory = (project, creator, owner=null, priority=null, status=null, callback) => {
   const randomName = mongoose.Types.ObjectId().toString();
   const testStory = {
     name: randomName,
@@ -91,6 +91,7 @@ export const createTestStory = (project, creator, owner=null, priority=null, cal
     owner: owner ? owner._id : null,
     points: Math.floor(Math.random() * 10) + 1, // Random number between 1 - 10.
     priority: priority ? priority._id : null,
+    status: status ? status._id : null,
     createdOn: new Date()
   };
   Story.create(testStory, (err, story) => {

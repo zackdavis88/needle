@@ -15,9 +15,6 @@ describe("[Story] Remove", () => {
   let authTokenDeveloper;
   let authTokenViewer;
   let authTokenNonMember;
-  // let testUserDeveloper;
-  // let testUserViewer;
-  // let testUserNonMember;
   let testProject;
   let testStory;
   let payload;
@@ -29,13 +26,10 @@ describe("[Story] Remove", () => {
             createTestProject(false, userAdmin, (project) => {
               createTestMembership(project, userDeveloper, {isDeveloper: true}, () => {
                 createTestMembership(project, userViewer, {isViewer: true}, () => {
-                  createTestStory(project, userDeveloper, null, null, (story) => {
+                  createTestStory(project, userDeveloper, null, null, null, (story) => {
                     authTokenDeveloper = generateToken(userDeveloper);
                     authTokenViewer = generateToken(userViewer);
                     authTokenNonMember = generateToken(userNonMember);
-                    // testUserDeveloper = userDeveloper;
-                    // testUserViewer = userViewer;
-                    // testUserNonMember = userNonMember;
                     testProject = project;
                     testStory = story;
                     done();

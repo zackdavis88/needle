@@ -3,7 +3,7 @@ import {escapeRegex} from "../utils/validator";
 
 const create = (req, res) => {
   const { name, details, points } = req.body;
-  const { project, user, owner, requestedPriority } = req;
+  const { project, user, owner, requestedPriority, requestedStatus } = req;
   Story.create({
     name,
     details: details.length ? details : undefined,
@@ -12,6 +12,7 @@ const create = (req, res) => {
     project: project._id,
     points: (!points || parseInt(points) === 0) ? undefined : parseInt(points),
     priority: requestedPriority ? requestedPriority._id : undefined,
+    status: requestedStatus ? requestedStatus._id : undefined,
     createdOn: new Date()
   }, (err, story) => {
     if(err)
@@ -36,7 +37,13 @@ const create = (req, res) => {
       points: story.points,
       priority: !requestedPriority ? undefined : {
         name: requestedPriority.name,
-        color: requestedPriority.color
+        color: requestedPriority.color,
+        transparent: requestedPriority.transparent
+      },
+      status: !requestedStatus ? undefined : {
+        name: requestedStatus.name,
+        color: requestedStatus.color,
+        transparent: requestedStatus.transparent
       },
       createdOn: story.createdOn
     };
@@ -61,6 +68,7 @@ const getAll = (req, res) => {
     .populate("creator", "-_id username displayName")
     .populate("owner", "-_id username displayName")
     .populate("priority", "-_id name color transparent")
+    .populate("status", "-_id name color transparent")
     .skip(pageOffset)
     .limit(itemsPerPage)
     .exec((err, stories) => {
@@ -82,6 +90,7 @@ const getAll = (req, res) => {
           owner: story.owner,
           points: story.points,
           priority: story.priority,
+          status: story.status,
           createdOn: story.createdOn,
           updatedOn: story.updatedOn
         }))
@@ -106,6 +115,7 @@ const getOne = (req, res) => {
     owner: story.owner || null,
     points: story.points,
     priority: !story.priority ? undefined : story.priority,
+    status: !story.status ? undefined : story.status,
     createdOn: story.createdOn,
     updatedOn: story.updatedOn
   };
@@ -114,9 +124,9 @@ const getOne = (req, res) => {
 };
 
 const update = (req, res) => {
-  const { name, details, points, priority } = req.body;
+  const { name, details, points, priority, status } = req.body;
   const ownerInput = req.body.owner;
-  const { project, story, owner, requestedPriority } = req;
+  const { project, story, owner, requestedPriority, requestedStatus } = req;
   if(name)
     story.name = name;
   
@@ -139,6 +149,11 @@ const update = (req, res) => {
     story.priority = requestedPriority._id;
   else if(typeof priority === "string" && !priority.length)
     story.priority = null;
+
+  if(requestedStatus)
+    story.status = requestedStatus._id;
+  else if(typeof status === "string" && !status.length)
+    story.status = null;
   
   story.updatedOn = new Date();
   story.save((err, updatedStory) => {
@@ -157,6 +172,7 @@ const update = (req, res) => {
       owner: story.owner, // default the owner to whatever we originally pulled from the db.
       points: updatedStory.points,
       priority: story.priority,
+      status: story.status,
       createdOn: updatedStory.createdOn,
       updatedOn: updatedStory.updatedOn
     };
@@ -172,6 +188,11 @@ const update = (req, res) => {
       storyData.priority = {name: requestedPriority.name, color: requestedPriority.color};
     else if(typeof priority === "string" && !priority.length)
       storyData.priority = null;
+    
+    if(requestedStatus)
+      storyData.status = {name: requestedStatus.name, color: requestedStatus.color};
+    else if(typeof status === "string" && !status.length)
+      storyData.status = null;
 
     return res.success("story has been successfully updated", {story: storyData});
   });

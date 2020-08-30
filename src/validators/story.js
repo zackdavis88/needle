@@ -2,6 +2,7 @@ import User from "../models/user";
 import Membership from "../models/membership";
 import Story from "../models/story";
 import Priority from "../models/priority";
+import Status from "../models/status";
 import mongoose from "mongoose";
 import { 
   compareType, 
@@ -91,27 +92,27 @@ const _validatePoints = (points, callback) => {
   callback();
 };
 
-const _validatePriority = (project, priorityName, callback) => {
-  if(isMissing(priorityName))
+const _validateConfig = (project, configInput, configName, model, callback) => {
+  if(isMissing(configInput))
     return callback();
   
-  if(!compareType(priorityName, "string"))
-    return callback("priority must be a string");
+  if(!compareType(configInput, "string"))
+    return callback(`${configName} must be a string`);
   
-  if(priorityName.length === 0)
+  if(configInput.length === 0)
     return callback();
 
-  Priority.findOne({
+  model.findOne({
     project: project._id,
-    name: {$regex: `^${priorityName}$`, $options: "i"}
-  }, (err, priority) => {
+    name: {$regex: `^${configInput}$`, $options: "i"}
+  }, (err, modelInstance) => {
     if(err)
       return callback(err);
     
-    if(!priority)
-      return callback("requested priority does not exist");
+    if(!modelInstance)
+      return callback(`requested ${configName} does not exist`);
     
-    callback(null, priority);
+    callback(null, modelInstance);
   });
 };
 
@@ -121,7 +122,8 @@ const create = (req, res, next) => {
     details,
     owner,
     points,
-    priority
+    priority,
+    status
   } = req.body;
   const { project } = req;
   _validateName(name, false, (err) => {
@@ -142,15 +144,23 @@ const create = (req, res, next) => {
           if(err)
             return res.validationError(err);
 
-          _validatePriority(project, priority, (err, priority) => {
+          _validateConfig(project, priority, "priority", Priority, (err, priority) => {
             if(err && err.code)
               return res.fatalError(err);
             else if(err)
               return res.validationError(err);
             
-            req.requestedPriority = priority;
-            req.owner = user;
-            next();
+            _validateConfig(project, status, "status", Status, (err, status) => {
+              if(err && err.code)
+                return res.fatalError(err);
+              else if(err)
+                return res.validationError(err);
+
+              req.requestedPriority = priority;
+              req.requestedStatus = status;
+              req.owner = user;
+              next();
+            });
           });
         });
       });
@@ -189,7 +199,8 @@ const storyIdSlug = (req, res, next) => {
     populate: {
       creator: "-_id username displayName",
       owner: "-_id username displayName",
-      priority: "-_id name color transparent"
+      priority: "-_id name color transparent",
+      status: "-_id name color transparent"
     }
   };
   getOneWithSlug(
@@ -210,7 +221,7 @@ const storyIdSlug = (req, res, next) => {
 };
 
 const update = (req, res, next) => {
-  const { name, details, owner, points, priority } = req.body;
+  const { name, details, owner, points, priority, status } = req.body;
   const { project } = req;
   if(isMissing(name) && isMissing(details) && isMissing(owner) && isMissing(priority))
     return res.validationError("request contains no update input");
@@ -233,15 +244,23 @@ const update = (req, res, next) => {
           if(err)
             return res.validationError(err);
 
-          _validatePriority(project, priority, (err, priority) => {
+          _validateConfig(project, priority, "priority", Priority, (err, priority) => {
             if(err && err.code)
               return res.fatalError(err);
             else if(err)
               return res.validationError(err);
             
-            req.requestedPriority = priority;
-            req.owner = user;
-            next();
+            _validateConfig(project, status, "status", Status, (err, status) => {
+              if(err && err.code)
+                return res.fatalError(err);
+              else if(err)
+                return res.validationError(err);
+
+              req.requestedPriority = priority;
+              req.requestedStatus = status;
+              req.owner = user;
+              next();
+            });
           })
         });
       });
