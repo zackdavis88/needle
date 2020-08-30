@@ -136,11 +136,11 @@ const allNames = (req, res) => {
   Status
     .find({project: project._id})
     .sort({createdOn: "asc"})
-    .distinct("name")
-    .exec((err, statusNames) => {
+    .exec((err, allStatus) => {
       if(err)
         return res.fatalError(err);
-      
+
+      const statusNames = allStatus.map(status => {return status.name});
       return res.success("status names have been successfully retrieved", {status: statusNames});
     });
 };

@@ -136,11 +136,11 @@ const allNames = (req, res) => {
   Priority
     .find({project: project._id})
     .sort({createdOn: "asc"})
-    .distinct("name")
-    .exec((err, priorityNames) => {
+    .exec((err, priorities) => {
       if(err)
         return res.fatalError(err);
       
+      const priorityNames = priorities.map(priority => priority.name);
       return res.success("priority names have been successfully retrieved", {priorities: priorityNames});
     });
 };
