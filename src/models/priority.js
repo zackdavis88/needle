@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const prioritySchema = mongoose.Schema({
   project: {type: mongoose.Schema.Types.ObjectId, ref: "Project"},
-  name: {type: String, unique: true},
+  name: String,
   color: String,
   transparent: Boolean,
   createdOn: Date,
