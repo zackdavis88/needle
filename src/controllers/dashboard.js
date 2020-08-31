@@ -73,6 +73,7 @@ const getStories = (req, res) => {
     .populate("owner", "-_id username displayName")
     .populate("project", "-description")
     .populate("priority", "-_id name color transparent")
+    .populate("status", "-_id name color transparent")
     .sort({createdOn: "asc"})
     .skip(pageOffset)
     .limit(itemsPerPage)
@@ -95,6 +96,7 @@ const getStories = (req, res) => {
           },
           points: story.points,
           priority: story.priority,
+          status: story.status,
           createdOn: story.createdOn,
           updatedOn: story.updatedOn
         }))

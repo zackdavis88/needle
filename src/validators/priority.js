@@ -6,7 +6,8 @@ import {
   getOneWithSlug,
   validateConfirmBoolean,
   validateColor,
-  validateTransparent
+  validateTransparent,
+  escapeRegex
 } from "../utils/validator";
 import mongoose from "mongoose";
 
@@ -29,7 +30,7 @@ const _validateName = (project, name, {isOptional, priority}, callback) => {
 
   const queryArgs = {
     project: project._id,
-    name: {$regex: `^${name}$`, $options: "i"}
+    name: {$regex: `^${escapeRegex(name)}$`, $options: "i"}
   };
   
   // if a priority was passed to this function it means we are updating a priority.
