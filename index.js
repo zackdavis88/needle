@@ -6,14 +6,11 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import methodOverride from "method-override";
 import { port } from "./config/app";
-import { 
-  dbHost,
-  dbPort,
-  dbName,
-  options
-} from "./config/db";
+const node_env = process.env.NODE_ENV;
+const dbConfigPath = node_env === "production" ? "./config/db-prod" : "./config/db";
+const dbConfig = require(dbConfigPath)
+const {dbHost, dbPort, dbName, options} = dbConfig;
 import { configureRoutesAndHandlers } from "./src/routes/index";
-
 const databaseUrl = `mongodb://${dbHost}:${dbPort}/${dbName}`;
 mongoose.set("useCreateIndex", true);
 mongoose.set("useUnifiedTopology", true);
@@ -44,7 +41,8 @@ db.once("open", () => {
       cert: fs.readFileSync("./config/ssl/cert.pem")
     }, app);
     httpsServer.listen(port);
-    
-    console.log(`Needle API is listening on port ${port}`);
+
+    console.log(`Needle API Environment: ${node_env && node_env.toUpperCase() || "Dev"}`)
+    console.log(`Needle API is listening on port ${port}.`);
   });
 });
