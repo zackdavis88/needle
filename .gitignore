@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Private config files
+config/ssl/
+config/db.json
+config/db-prod.json
+config/auth.json
